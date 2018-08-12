@@ -20,7 +20,9 @@ namespace TradeEngineers.SerializedTradeStorage
     [System.Xml.Serialization.XmlRoot(Namespace = Definitions.DataFormat)]
     public abstract class StationBase
     {
-        public virtual string StationTyp { get { return "StationBaseType"; } }
+        public static string StationType = "StationBaseType";
+        private string _type = "";
+        public string Type { get { return _type; } }
         public double BaseCargoSize { get; set; } = 1000;
         public List<TradeItem> Goods { get; } = new List<TradeItem>();
         public long OwnerId
@@ -34,19 +36,18 @@ namespace TradeEngineers.SerializedTradeStorage
 
         }
 
-        public StationBase(long ownerId)
+        public StationBase(long ownerId, string type)
         {
             _ownerId = ownerId;
+            _type = type;
         }
 
         public static StationBase Factory(string blockName, long ownerId)
         {
             if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Station Block name was empty");
+            string name = blockName.ToUpper();
 
-            switch (blockName.ToUpper())
-            {
-                case "TRADESTATION": return new TradeStation(true, ownerId);
-            }
+            if (TradeStation.StationType.ToUpper() == name) return new TradeStation(true, ownerId, TradeStation.StationType);
 
             throw new ArgumentException("Station Block name did not match a station kind");
         }

@@ -49,12 +49,12 @@ namespace TradeEngineers.InputOutput
                 var buystringbuild = new StringBuilder();
                 var sellstringbuild = new StringBuilder();
                 buystringbuild.AppendLine("StationName:" + Base.CustomName);
-                buystringbuild.AppendLine("StationType:" + Station.StationTyp);
+                buystringbuild.AppendLine("StationType:" + Station.Type);
                 buystringbuild.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
                 buystringbuild.AppendLine("Buying: (actual cargo)");
 
                 sellstringbuild.AppendLine("StationName:" + Base.CustomName);
-                sellstringbuild.AppendLine("StationType:" + Station.StationTyp);
+                sellstringbuild.AppendLine("StationType:" + Station.Type);
                 sellstringbuild.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
                 sellstringbuild.AppendLine("Selling: (actual cargo)");
                 var goodsselling = Station.Goods.Where(g => g.IsSell);
@@ -96,7 +96,8 @@ namespace TradeEngineers.InputOutput
                         else //Allgemeine Infos der station anzeigen lassen
                         {
                             var builder = new StringBuilder();
-                            builder.AppendLine("StationType:" + Station.StationTyp);
+                            builder.AppendLine("StationName:" + Base.CustomName);
+                            builder.AppendLine("StationType:" + Station.Type);
                             lcdtextinfo = builder.ToString();                            
                         }
 

@@ -13,26 +13,13 @@ namespace TradeEngineers.SerializedTradeStorage
     [System.Xml.Serialization.XmlRoot(Namespace = Definitions.DataFormat)]
     public class TradeStation : StationBase
     {
+        public new static string StationType = "TradeStation";
         public TradeStation() { }
 
-        public TradeStation(bool init, long ownerId) : base(ownerId)
+        public TradeStation(bool init, long ownerId, string type) : base(ownerId, type)
         {
-            /*var pricelist = PriceFinder.BuildPriceModelList(new List<MyDefinitionId>());
-
-            //Change MinPercent for Components:
-            foreach (var itemid in ItemDefinitionFactory.Components)
-            {
-                pricelist[itemid].MinPercent = 0.4;
-                pricelist[itemid].MaxPercent = 1.1;
-            }*/
-            //Goods.AddRange(ItemDefinitionFactory.Components.Select(i => new TradeItem(i, pricelist[i], true,true)).ToList());
-            //Goods.AddRange(ItemDefinitionFactory.Ingots.Select(i => new TradeItem(i, pricelist[i], true, true)));
-            //Goods.AddRange(ItemDefinitionFactory.Ores.Select(i => new TradeItem(i, pricelist[i], true, true)));
-            //Goods.AddRange(ItemDefinitionFactory.PlayerTools.Select(i => new TradeItem(i, pricelist[i], true, true)));
-
-            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Gold", new PriceModel(1f, true, 0.6f, 1.4f), true, true, 1000, 0));
-
-            //Goods.AddRange(ItemDefinitionFactory.Ammunitions.Select(i => new TradeItem(i, pricelist[i], true, true, 100, 00)));
+            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Gold", new PriceModel(2f, true, 0.6f, 1.4f), true, true, 1000, 0));
+            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Silver", new PriceModel(1f, true, 0.6f, 1.4f), true, true, 1000, 0));
         }
 
         public override void HandleProdCycle(double fullprodtime)
@@ -103,14 +90,6 @@ namespace TradeEngineers.SerializedTradeStorage
 
                     break; // first out
                 }
-            }
-        }
-
-        public override string StationTyp
-        {
-            get
-            {
-                return "TradeStation";
             }
         }
     }
