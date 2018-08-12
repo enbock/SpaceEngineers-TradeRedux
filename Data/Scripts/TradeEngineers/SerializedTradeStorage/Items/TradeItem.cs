@@ -1,5 +1,6 @@
 ﻿using System;
 using VRage.Game;
+using Sandbox.ModAPI;
 
 namespace TradeEngineers
 {
@@ -16,6 +17,15 @@ namespace TradeEngineers
             IsSell = sell;
             IsBuy = buy;
         }
+        public TradeItem(string itemType, TradeGoods.PriceModel priceModel, bool sell, bool buy, int cargoSize = 1000, int currentCargo = 500)
+        {
+            _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
+            PriceModel = priceModel;
+            CargoSize = cargoSize;
+            CurrentCargo = currentCargo;
+            IsSell = sell;
+            IsBuy = buy;
+        }
 
         private MyDefinitionId _definition;
         public MyDefinitionId Definition
@@ -26,7 +36,7 @@ namespace TradeEngineers
             }
         }
 
-        public string DefinitionSerializableString
+        public string SerializedDefinition
         {
             get
             {
@@ -39,9 +49,9 @@ namespace TradeEngineers
                 {
                     _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(value);
                 }
-                catch (Exceptions.UnknownItemException)
+                catch (Exceptions.UnknownItemException exception)
                 {
-
+                    MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
                 }
             }
         }

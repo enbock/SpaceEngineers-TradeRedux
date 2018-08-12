@@ -7,24 +7,24 @@ namespace TradeEngineers.PluginApi
 {
     public static class StationManager
     {
-        private static List<LCDBlock> _knownTEBlocks = new List<LCDBlock>();
+        private static List<TradeBlock> stationList = new List<TradeBlock>();
 
-        public static void Register(LCDBlock block)
+        public static void Register(TradeBlock block)
         {            
-            if (!_knownTEBlocks.Contains(block))
-                _knownTEBlocks.Add(block);
+            if (!stationList.Contains(block))
+                stationList.Add(block);
         }
 
         public static IEnumerable<StationWithTradeBlock> GetStations()
         {
-            CleanBlocks();
-            return _knownTEBlocks.Where(lcd => lcd != null && lcd.Station != null).Select(lcd => new StationWithTradeBlock { Station = lcd.Station, TradeBlock = lcd.myLcd, LCD = lcd });
+            CleanUpStationList();
+            return stationList.Where(lcd => lcd != null && lcd.Station != null).Select(lcd => new StationWithTradeBlock { Station = lcd.Station, TradeBlock = lcd.LcdPanel, LCD = lcd });
         }
 
-        private static void CleanBlocks()
+        private static void CleanUpStationList()
         {
-            var cleanStations = _knownTEBlocks.Where(lcd => lcd != null && lcd.myLcd!=null && !lcd.MarkedForClose && !lcd.Closed).ToList();
-            _knownTEBlocks = cleanStations;
+            var cleanStations = stationList.Where(lcd => lcd != null && lcd.LcdPanel!=null && !lcd.MarkedForClose && !lcd.Closed).ToList();
+            stationList = cleanStations;
         }
     }
 
@@ -32,6 +32,6 @@ namespace TradeEngineers.PluginApi
     {
         public StationBase Station { get; set; }
         public Sandbox.ModAPI.IMyTextPanel TradeBlock { get; set; }
-        public LCDBlock LCD { get; set; }
+        public TradeBlock LCD { get; set; }
     }
 }

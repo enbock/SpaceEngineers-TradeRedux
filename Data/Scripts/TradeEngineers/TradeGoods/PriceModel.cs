@@ -5,9 +5,9 @@ namespace TradeEngineers.TradeGoods
     {
         public PriceModel() { }
 
-        public PriceModel(double productionPrice, bool willProduce = false, double minPercent = 0.6f, double maxPercent = 1.4f)
+        public PriceModel(double price, bool willProduce = false, double minPercent = 0.6f, double maxPercent = 1.4f)
         {
-            ProductionPrice = productionPrice;
+            Price = price;
             MinPercent = minPercent;
             MaxPercent = maxPercent;
             IsProducent = willProduce;
@@ -15,15 +15,7 @@ namespace TradeEngineers.TradeGoods
 
         public bool IsProducent { get; set; } = false;
 
-        public double ProductionPrice { get; set; } = 0;
-
-        public double Price
-        {
-            get
-            {
-                return ProductionPrice;
-            }
-        }
+        public double Price { get; set; } = 0;
 
         public double MinPercent { get; set; } = 0.75f;
 
@@ -32,8 +24,8 @@ namespace TradeEngineers.TradeGoods
         public double GetBuyPrice(double cargoVolumePercent = 0.5)
         {
             cargoVolumePercent = cargoVolumePercent > 1 ? 1 : cargoVolumePercent;
-            var preis = ProductionPrice * (1 - (1 - MinPercent) * cargoVolumePercent);
-            if (!IsProducent) preis += ProductionPrice;
+            var preis = Price * (1 - (1 - MinPercent) * cargoVolumePercent);
+            if (!IsProducent) preis += Price;
             return preis;
         }
 
@@ -46,7 +38,7 @@ namespace TradeEngineers.TradeGoods
 
         public override string ToString()
         {
-            return Price + "(" + ProductionPrice + ");" + MinPercent + ";" + MaxPercent;
+            return Price + ";" + MinPercent + ";" + MaxPercent;
         }
     }
 }

@@ -248,6 +248,10 @@ namespace TradeEngineers.SerializedTradeStorage
             }
         }
 
+        public virtual void TakeSettingData(StationBase oldStationData)
+        {
+        }
+
         public void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, MyDefinitionId itemDefinition)
         {
             if (itemDefinition != null)

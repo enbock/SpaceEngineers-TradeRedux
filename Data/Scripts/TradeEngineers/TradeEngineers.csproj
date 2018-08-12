@@ -44,7 +44,8 @@
     <Compile Include="InputOutput\LCDOutput.cs" />
     <Compile Include="Inventory\InventoryApi.cs" />
     <Compile Include="Inventory\ItemDefinitionFactory.cs" />
-    <Compile Include="LCDBlock.cs" />
+    <Compile Include="PluginApi\Logger.cs" />
+    <Compile Include="TradeBlock.cs" />
     <Compile Include="Lib\PrefabSpawner.cs" />
     <Compile Include="PluginApi\NetWorkTransmitter.cs" />
     <Compile Include="PluginApi\StationManager.cs" />

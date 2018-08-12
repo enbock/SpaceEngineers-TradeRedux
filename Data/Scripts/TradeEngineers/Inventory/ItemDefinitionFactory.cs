@@ -16,7 +16,7 @@ namespace TradeEngineers.Inventory
         public static VRage.Game.MyDefinitionId DefinitionFromString(string definition)
         {
             if (string.IsNullOrWhiteSpace(definition) || definition.Contains("(null)"))
-                throw new UnknownItemException();
+                throw new UnknownItemException("<Empty defition>");
 
             var input = definition.Trim();
             VRage.Game.MyDefinitionId defId;

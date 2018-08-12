@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using TradeEngineers.Inventory;
 using VRage.Game;
 using TradeEngineers.TradeGoods;
@@ -31,10 +30,8 @@ namespace TradeEngineers.SerializedTradeStorage
             //Goods.AddRange(ItemDefinitionFactory.Ores.Select(i => new TradeItem(i, pricelist[i], true, true)));
             //Goods.AddRange(ItemDefinitionFactory.PlayerTools.Select(i => new TradeItem(i, pricelist[i], true, true)));
 
-            MyDefinitionId gold = new MyDefinitionId(typeof(MyObjectBuilder_Ingot), "Gold");
-            PriceModel price = new PriceModel(1f, true, 0.6f, 1.4f);
-            Goods.Add(new TradeItem(gold, price, true, true, 100000000, 0));
-
+            //Goods.Add(new TradeItem(new MyDefinitionId(typeof(MyObjectBuilder_Ingot), "Gold"), new PriceModel(1f, true, 0.6f, 1.4f), true, true, 100000000, 0));
+            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Gold", new PriceModel(1f, true, 0.6f, 1.4f), true, true, 100000000, 0));
 
             //Goods.AddRange(ItemDefinitionFactory.Ammunitions.Select(i => new TradeItem(i, pricelist[i], true, true, 100, 00)));
         }
@@ -89,6 +86,23 @@ namespace TradeEngineers.SerializedTradeStorage
                     }
                 }
                 MyAPIGateway.Utilities.ShowMessage("HandleProdCycle", tradeitem.Definition.ToString() + "s: " + itemCount.ToString("0.#####") + "/" + tradeitem.CargoRatio.ToString("0.###") + "/" + tradeitem.CurrentCargo);
+            }
+        }
+
+        public override void TakeSettingData(StationBase oldStationData)
+        {
+            foreach (TradeItem beforeItem in oldStationData.Goods)
+            {
+                foreach (TradeItem nowItem in Goods)
+                {
+                    if (nowItem.SerializedDefinition != beforeItem.SerializedDefinition) continue;
+
+                    nowItem.PriceModel.Price = beforeItem.PriceModel.Price;
+                    nowItem.PriceModel.MinPercent = beforeItem.PriceModel.MinPercent;
+                    nowItem.PriceModel.MaxPercent = beforeItem.PriceModel.MaxPercent;
+
+                    break; // first out
+                }
             }
         }
 

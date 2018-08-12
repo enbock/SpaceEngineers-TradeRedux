@@ -17,5 +17,9 @@ namespace TradeEngineers.Exceptions
         {
 
         }
+        public UnknownItemException(string id) : base($"The item '{id}' is unknown to the game")
+        {
+
+        }
     }
 }
