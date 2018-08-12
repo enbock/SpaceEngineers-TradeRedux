@@ -54,107 +54,6 @@ namespace TradeEngineers.SerializedTradeStorage
 
         public virtual void HandleProdCycle(double fullprodtime)
         {
-            /* 
-             * Sieht nach produktions routine aus...verschieben wir in entsprechende sub class.
-             * 
-             * 
-            int proditemcnt = 0; //Anzahl der zu produzierenden Güter
-            int numberofslots = 0;
-            var proditems = Goods.Where(g => g.PriceModel.IsProducent && g.CargoRatio < 1);
-            var proditemsrated = proditems.Where(g => g.CargoRatio < PrimProdLvl).ToList();
-            if (proditemsrated.Count > 0)
-            {
-                proditemcnt = proditemsrated.Count;
-                proditems = proditemsrated;
-            }
-            else
-                proditemcnt = proditems.ToList().Count();
-
-            numberofslots = proditemcnt; //Erstmal bekommt gedes Item einen Slot zugewiesen
-            //MyAPIGateway.Utilities.ShowMessage("ProdInfo:", "Count: " + proditemcnt);
-
-            Dictionary<TradeItem, double> AktiveProduktion = new Dictionary<TradeItem, double>();
-
-            var ordertitems = proditems.OrderBy(g => g.CargoRatio);
-            foreach (var tradeitem in ordertitems) /// Vorverarbeitung um Produktionsprozess zu optimieren
-            {
-                var itemid = tradeitem.Definition;
-                var freecargo = tradeitem.CargoSize - tradeitem.CurrentCargo;
-                if (freecargo == 0) continue;
-                double itemcount = freecargo;
-
-                var useditemsdict = ItemDefinitionFactory.GetRecipeInput(itemid);
-
-                foreach (var key in useditemsdict.Keys)
-                {
-                    var amount = useditemsdict[key];
-                    var itemneeded = Goods.Find(g => g.Definition == key);
-
-                    if (itemneeded == null)
-                    {
-                        //HydrogenBottle fehlt irgendwie!
-                        //MyAPIGateway.Utilities.ShowMessage("HandleProdCycle", "Needed item missing!! " + key.ToString());
-                        itemcount = 0;
-                        break;
-                    }
-                    if (itemcount > (itemneeded.CurrentCargo / amount)) itemcount = itemneeded.CurrentCargo / amount;
-                }
-                if (!(ItemDefinitionFactory.Ores.Contains(itemid) || ItemDefinitionFactory.Ingots.Contains(itemid)))
-                {
-                    itemcount = Math.Floor(itemcount);
-                }
-                if (itemcount > 0)
-                {
-                    AktiveProduktion.Add(tradeitem, itemcount);
-                }
-                else //Um Leerlauf zu verhindern wird der Produktions Zeitslot für andere Güter zur Verfügung gestellt
-                {  //Nicht ideal wegen der Sortierung in abh vom Lagerstand
-                    if (proditemcnt > 1) proditemcnt--;
-                }
-            }
-            ////////////////////////////////
-
-            foreach (var tradeitem in AktiveProduktion.Keys)
-            {
-                var itemid = tradeitem.Definition;
-                var useditemsdict = ItemDefinitionFactory.GetRecipeInput(itemid);
-                var actprodtime = (fullprodtime * ProdRating) / proditemcnt; //Zeit die fuer dieses Item zur Verfügung steht (proditemcnt wie u.u. noch verändert)
-                var neededprodtimeS = ItemDefinitionFactory.GetProductionTimeInSeconds(itemid);
-                var maxprodval = actprodtime / neededprodtimeS; //Max Anzahl an
-                double itemcount = AktiveProduktion[tradeitem];
-                if (maxprodval < itemcount) itemcount = maxprodval;
-
-                ////////////////// Duplikat zur anderen Schleife muss aber 2mal ausgeführt werden weil evtl das Lager schon leer ist!
-                foreach (var key in useditemsdict.Keys)
-                {
-                    var amount = useditemsdict[key];
-                    var itemneeded = Goods.Find(g => g.Definition == key);
-                    if (itemneeded == null)
-                    {
-                        itemcount = 0;
-                        break;
-                    }
-                    if (itemcount > (itemneeded.CurrentCargo / amount)) itemcount = itemneeded.CurrentCargo / amount;
-                }
-                if (!(ItemDefinitionFactory.Ores.Contains(itemid) || ItemDefinitionFactory.Ingots.Contains(itemid)))
-                {
-                    itemcount = Math.Floor(itemcount);
-                }
-                //////////////////////////////
-                if (itemcount > 0)
-                {
-                    tradeitem.CurrentCargo += itemcount;
-                    foreach (var key in useditemsdict.Keys)
-                    {
-                        var amount = useditemsdict[key];
-                        var itemneeded = Goods.Find(g => g.Definition == key);
-
-                        itemneeded.CurrentCargo -= (itemcount * amount);
-                    }
-                    //MyAPIGateway.Utilities.ShowMessage("HandleProdCycle", tradeitem.Definition.ToString() + "s: " + itemcount.ToString("0.#####") + "/" + tradeitem.CargoRatio.ToString("0.###") + "/" + neededprodtimeS + "/" + actprodtime);
-                }
-            }
-            */
         }
 
         private Regex _cargoBlockRegex = new Regex(@"\((\w+):?([\w\s\\\/]*)\)", RegexOptions.Compiled & RegexOptions.IgnoreCase);
@@ -181,14 +80,10 @@ namespace TradeEngineers.SerializedTradeStorage
                     var item = match.Groups[2].Value;
                     if (action.Equals("buy"))
                     {
-                        //MyAPIGateway.Utilities.ShowMessage("OreListCnt", ""+ OreList.Count);
-                        //InventoryApi.ListItemsInventory(cargoBlock);
-
                         foreach (var tradeItem in Goods.Where(g => g.IsBuy))
                         {
                             HandleBuySequenceOnCargo(cargoBlock, tradeItem);
                         }
-                        //MyAPIGateway.Utilities.ShowMessage("StationWarning:", "Regex buy");
                     }
                     else if (action.Equals("sell"))
                     {
@@ -209,39 +104,11 @@ namespace TradeEngineers.SerializedTradeStorage
                         {
                             MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
                         }
-                        //MyAPIGateway.Utilities.ShowMessage("StationWarning:", "Regex sell " + item);
                     }
-                    /*
-                    else if (action.Equals("tobase"))
-                    {
-                        HandleTransferToBaseSequenceOnCargo(cargoBlock);
-                    }
-                    */
                 }
             }
         }
-
-        public void HandleTransferToBaseSequenceOnCargo(IMyCubeBlock cargoBlock)
-        {
-            //MyAPIGateway.Utilities.ShowMessage("OreListCnt", ""+ OreList.Count);
-            //InventoryApi.ListItemsInventory(cargoBlock);
-
-            InventoryApi.ListItemsInventory(cargoBlock);
-            var inventory = cargoBlock.GetInventory(0);
-
-            var items = inventory.GetItems();
-
-            foreach (var item in items)
-            {
-                var itemdef = item.Content.GetId();
-                var itemcount = InventoryApi.CountItemsInventory(cargoBlock, itemdef);
-                if (itemcount > 0)
-                {
-                    InventoryApi.RemoveFromInventory(cargoBlock, itemdef, itemcount);
-                }
-            }
-        }
-
+        
         public virtual void TakeSettingData(StationBase oldStationData)
         {
         }
@@ -328,13 +195,7 @@ namespace TradeEngineers.SerializedTradeStorage
                 }
             }
         }
-
-        /// <summary>
-        /// Dictionary von Connectoren mit ihren verbundenen Schiffen (oder null wenn unverbunden)
-        /// Dictionary [Connector -> verbundenes Schiff (kann null sein)]
-        /// </summary>
-        /// <param name="entity">Ein Block oder das eigene Schiff</param>
-        /// <returns>Dictionary [Connector -> verbundenes Schiff (kann null sein)]</returns>
+        
         public static Dictionary<IMyShipConnector, IMyCubeGrid> GetConnectedShips(IMyEntity entity)
         {
             var connections = new Dictionary<IMyShipConnector, IMyCubeGrid>();
