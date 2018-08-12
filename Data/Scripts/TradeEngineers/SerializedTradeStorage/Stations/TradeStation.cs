@@ -15,7 +15,7 @@ namespace TradeEngineers.SerializedTradeStorage
     {
         public TradeStation() { }
 
-        public TradeStation(bool init)
+        public TradeStation(bool init, long ownerId) : base(ownerId)
         {
             /*var pricelist = PriceFinder.BuildPriceModelList(new List<MyDefinitionId>());
 
@@ -30,8 +30,7 @@ namespace TradeEngineers.SerializedTradeStorage
             //Goods.AddRange(ItemDefinitionFactory.Ores.Select(i => new TradeItem(i, pricelist[i], true, true)));
             //Goods.AddRange(ItemDefinitionFactory.PlayerTools.Select(i => new TradeItem(i, pricelist[i], true, true)));
 
-            //Goods.Add(new TradeItem(new MyDefinitionId(typeof(MyObjectBuilder_Ingot), "Gold"), new PriceModel(1f, true, 0.6f, 1.4f), true, true, 100000000, 0));
-            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Gold", new PriceModel(1f, true, 0.6f, 1.4f), true, true, 100000000, 0));
+            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Gold", new PriceModel(1f, true, 0.6f, 1.4f), true, true, 1000, 0));
 
             //Goods.AddRange(ItemDefinitionFactory.Ammunitions.Select(i => new TradeItem(i, pricelist[i], true, true, 100, 00)));
         }
@@ -100,6 +99,7 @@ namespace TradeEngineers.SerializedTradeStorage
                     nowItem.PriceModel.Price = beforeItem.PriceModel.Price;
                     nowItem.PriceModel.MinPercent = beforeItem.PriceModel.MinPercent;
                     nowItem.PriceModel.MaxPercent = beforeItem.PriceModel.MaxPercent;
+                    nowItem.CargoSize = beforeItem.CargoSize;
 
                     break; // first out
                 }

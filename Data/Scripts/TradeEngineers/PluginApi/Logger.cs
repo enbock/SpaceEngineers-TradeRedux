@@ -5,38 +5,46 @@ namespace TradeEngineers.PluginApi
 {
     public class Logger
     {
-        private static System.IO.TextWriter logger = null;
+        private static System.IO.TextWriter Writer = null;
 
         public Logger()
         {
         }
 
-        public static void Log(string text)
+        public static string Log(string text)
         {
+            String now = DateTime.Now.Year + "." + DateTime.Now.Month + "." + DateTime.Now.Day + " " + DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second;
             MyAPIGateway.Utilities.ShowMessage("TE-Log", text);
-            if (logger == null)
+            if (Writer == null)
             {
                 string fileName = "TradeBlock.log";
                 try
                 {
-                    logger = MyAPIGateway.Utilities.WriteFileInLocalStorage(fileName, typeof(TradeBlock));
+                    Writer = MyAPIGateway.Utilities.WriteFileInLocalStorage(fileName, typeof(TradeBlock));
                 }
                 catch (Exception)
                 {
                     MyAPIGateway.Utilities.ShowMessage("TradeEngineers IO", "Could not open the log file:" + fileName);
-                    return;
                 }
             }
+            string line = now + ": " + text;
 
-            String now = DateTime.Now.Year + "." + DateTime.Now.Month + "." + DateTime.Now.Day + " " + DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second;
-            logger.WriteLine(now + ": " + text);
-            logger.Flush();
+            if (Writer != null)
+            {
+                Writer.WriteLine(line);
+                Writer.Flush();
+            }
+
+            return line;
         }
 
         public static void Close()
         {
-            if (logger != null)
-                logger.Close();
+            if (Writer != null)
+            {
+                Writer.Close();
+                Writer = null;
+            }
         }
     }
 }

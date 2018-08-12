@@ -19,12 +19,19 @@ namespace TradeEngineers
         }
         public TradeItem(string itemType, TradeGoods.PriceModel priceModel, bool sell, bool buy, int cargoSize = 1000, int currentCargo = 500)
         {
-            _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
-            PriceModel = priceModel;
-            CargoSize = cargoSize;
-            CurrentCargo = currentCargo;
-            IsSell = sell;
-            IsBuy = buy;
+            try
+            {
+                _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
+                PriceModel = priceModel;
+                CargoSize = cargoSize;
+                CurrentCargo = currentCargo;
+                IsSell = sell;
+                IsBuy = buy;
+            }
+            catch (Exceptions.UnknownItemException)
+            {
+                //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
+            }
         }
 
         private MyDefinitionId _definition;
@@ -49,9 +56,9 @@ namespace TradeEngineers
                 {
                     _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(value);
                 }
-                catch (Exceptions.UnknownItemException exception)
+                catch (Exceptions.UnknownItemException)
                 {
-                    MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
+                    //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
                 }
             }
         }

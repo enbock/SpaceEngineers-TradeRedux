@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using VRage.ModAPI;
 using TradeEngineers;
 using TradeEngineers.Exceptions;
+using TradeEngineers.PluginApi;
 
 
 
@@ -22,24 +23,34 @@ namespace TradeEngineers.SerializedTradeStorage
         public virtual string StationTyp { get { return "StationBaseType"; } }
         public double BaseCargoSize { get; set; } = 1000;
         public List<TradeItem> Goods { get; } = new List<TradeItem>();
+        public long OwnerId
+        {
+            get { return _ownerId; }
+        }
+        protected long _ownerId = 0;
 
         public StationBase()
         {
 
         }
 
-        public static StationBase Factory(string blockName, long ownerid)
+        public StationBase(long ownerId)
+        {
+            _ownerId = ownerId;
+        }
+
+        public static StationBase Factory(string blockName, long ownerId)
         {
             if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Station Block name was empty");
 
             switch (blockName.ToUpper())
             {
-                case "TRADESTATION": return new TradeStation(true);
+                case "TRADESTATION": return new TradeStation(true, ownerId);
             }
 
             throw new ArgumentException("Station Block name did not match a station kind");
         }
-        
+
         public virtual void HandleProdCycle(double fullprodtime)
         {
             /* 
@@ -150,7 +161,6 @@ namespace TradeEngineers.SerializedTradeStorage
         {
             foreach (IMySlimBlock block in cargoblockslist)
             {
-
                 IMyCubeBlock cargoBlock = (IMyCubeBlock)block.FatBlock;
                 if (cargoBlock == null) continue;
 
@@ -170,22 +180,42 @@ namespace TradeEngineers.SerializedTradeStorage
                     var item = match.Groups[2].Value;
                     if (action.Equals("buy"))
                     {
-                        HandleBuySequenceOnCargo(cargoBlock);
+                        //MyAPIGateway.Utilities.ShowMessage("OreListCnt", ""+ OreList.Count);
+                        //InventoryApi.ListItemsInventory(cargoBlock);
+
+                        foreach (var tradeItem in Goods.Where(g => g.IsBuy))
+                        {
+                            HandleBuySequenceOnCargo(cargoBlock, tradeItem);
+                        }
                         //MyAPIGateway.Utilities.ShowMessage("StationWarning:", "Regex buy");
                     }
                     else if (action.Equals("sell"))
                     {
-                        var itemdef = ItemDefinitionFactory.DefinitionFromString(item);
-                        if (itemdef != null)
+                        MyDefinitionId itemDefinition;
+                        try
                         {
-                            HandleSellSequenceOnCargo(cargoBlock, itemdef);
+                            itemDefinition = ItemDefinitionFactory.DefinitionFromString(item);
+                            if (itemDefinition != null)
+                            {
+                                foreach (TradeItem tradeItem in Goods.Where(g => g.IsSell))
+                                {
+                                    if (tradeItem.Definition != itemDefinition) continue;
+                                    HandleSellSequenceOnCargo(cargoBlock, tradeItem);
+                                }
+                            }
+                        }
+                        catch (Exceptions.UnknownItemException exception)
+                        {
+                            MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
                         }
                         //MyAPIGateway.Utilities.ShowMessage("StationWarning:", "Regex sell " + item);
                     }
+                    /*
                     else if (action.Equals("tobase"))
                     {
                         HandleTransferToBaseSequenceOnCargo(cargoBlock);
                     }
+                    */
                 }
             }
         }
@@ -211,94 +241,92 @@ namespace TradeEngineers.SerializedTradeStorage
             }
         }
 
-        public void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock)
+        public virtual void TakeSettingData(StationBase oldStationData)
         {
-            //MyAPIGateway.Utilities.ShowMessage("OreListCnt", ""+ OreList.Count);
-            //InventoryApi.ListItemsInventory(cargoBlock);
+        }
 
-            foreach (var tradeItem in Goods.Where(g => g.IsBuy))
+        public void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, TradeItem tradeItem)
+        {
+            var itemCount = InventoryApi.CountItemsInventory(cargoBlock, tradeItem.Definition);
+            var maximumItemsPerTransfer = tradeItem.CargoSize * 0.01; //10% of max
+            if (itemCount > 0)
             {
-                var itemCount = InventoryApi.CountItemsInventory(cargoBlock, tradeItem.Definition);
-                var maximumItemsPerTransfer = tradeItem.CargoSize * 0.01; //10% of max
-                if (itemCount > 0)
+                var pricing = tradeItem.PriceModel; //Hier sollte per pricefinder das richtige modell rausgesucht werden                                        
+                var buyPrice = pricing.GetBuyPrice(tradeItem.CargoRatio);
+
+                if (itemCount > maximumItemsPerTransfer) itemCount = maximumItemsPerTransfer;
+
+                if ((itemCount + tradeItem.CurrentCargo) > tradeItem.CargoSize)
                 {
-                    var pricing = tradeItem.PriceModel; //Hier sollte per pricefinder das richtige modell rausgesucht werden                                        
-                    var buyPrice = pricing.GetBuyPrice(tradeItem.CargoRatio);
+                    itemCount = (tradeItem.CargoSize - tradeItem.CurrentCargo);
+                }
+                if (!(ItemDefinitionFactory.Ores.Contains(tradeItem.Definition) || ItemDefinitionFactory.Ingots.Contains(tradeItem.Definition)))
+                {
+                    itemCount = Math.Floor(itemCount);
+                }
+                //MyAPIGateway.Utilities.ShowMessage("OreCnt1", "" + itemcount);
 
-                    if (itemCount > maximumItemsPerTransfer) itemCount = maximumItemsPerTransfer;
-                    
-                    if ((itemCount + tradeItem.CurrentCargo) > tradeItem.CargoSize)
+                var removedItemsCount = InventoryApi.RemoveFromInventory(cargoBlock, tradeItem.Definition, itemCount);
+                if (removedItemsCount != 0)
+                {
+                    tradeItem.CurrentCargo += removedItemsCount;
+                    //MyAPIGateway.Utilities.ShowMessage("OreCnt2", "" + removedvalue);
+                    try
                     {
-                        itemCount = (tradeItem.CargoSize - tradeItem.CurrentCargo);
-                    }
-                    if (!(ItemDefinitionFactory.Ores.Contains(tradeItem.Definition) || ItemDefinitionFactory.Ingots.Contains(tradeItem.Definition)))
-                    {
-                        itemCount = Math.Floor(itemCount);
-                    }
-                    //MyAPIGateway.Utilities.ShowMessage("OreCnt1", "" + itemcount);
-
-                    var removedItemsCount = InventoryApi.RemoveFromInventory(cargoBlock, tradeItem.Definition, itemCount);
-                    if (removedItemsCount != 0)
-                    {
-                        tradeItem.CurrentCargo += removedItemsCount;
-                        //MyAPIGateway.Utilities.ShowMessage("OreCnt2", "" + removedvalue);
                         InventoryApi.AddToInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits), (buyPrice * removedItemsCount));
+                    }
+                    catch (Exceptions.UnknownItemException)
+                    {
+                        //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
                     }
                 }
             }
         }
 
-        public virtual void TakeSettingData(StationBase oldStationData)
+        public void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, TradeItem tradeItem)
         {
-        }
+            PriceModel pricing = tradeItem.PriceModel;
+            MyDefinitionId itemDefinition = tradeItem.Definition;
+            
+            var maximumItemsPerTransfer = tradeItem.CargoSize * 0.01; //10% of max
 
-        public void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, MyDefinitionId itemDefinition)
-        {
-            if (itemDefinition != null)
+            var ceditsInCargo = InventoryApi.CountItemsInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits));
+            if (ceditsInCargo > 0)
             {
-                TradeItem tradeItem = null;
-                PriceModel pricing;
-                foreach (var tradeitem in Goods.Where(g => g.IsSell))
+                var sellPrice = pricing.GerSellPrice(tradeItem.CargoRatio);
+                var sellCount = ceditsInCargo / sellPrice;
+
+                if (sellCount > maximumItemsPerTransfer) sellCount = maximumItemsPerTransfer;
+
+                if (sellCount > tradeItem.CurrentCargo)
                 {
-                    if (tradeitem.Definition == itemDefinition)
-                    {
-                        tradeItem = tradeitem;
-                        break;
-                    }
+                    sellCount = tradeItem.CurrentCargo;
                 }
-                if (tradeItem == null) return;
-                var maximumItemsPerTransfer = tradeItem.CargoSize * 0.01; //10% of max
 
-                pricing = tradeItem.PriceModel;
-                var ceditsInCargo = InventoryApi.CountItemsInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits));
-                if (ceditsInCargo > 0)
+                if (!(ItemDefinitionFactory.Ores.Contains(itemDefinition) || ItemDefinitionFactory.Ingots.Contains(itemDefinition)))
                 {
-                    var sellPrice = pricing.GerSellPrice(tradeItem.CargoRatio);
-                    var sellCount = ceditsInCargo / sellPrice;
+                    sellCount = Math.Floor(sellCount);
+                }
 
-                    if (sellCount > maximumItemsPerTransfer) sellCount = maximumItemsPerTransfer;
-
-                    if (sellCount > tradeItem.CurrentCargo)
+                
+                if ((ceditsInCargo >= (sellPrice * sellCount)) && (sellCount > 0))
+                {
+                    ceditsInCargo = sellPrice * sellCount;
+                    try
                     {
-                        sellCount = tradeItem.CurrentCargo;
-                    }
-
-                    if (!(ItemDefinitionFactory.Ores.Contains(itemDefinition) || ItemDefinitionFactory.Ingots.Contains(itemDefinition)))
-                    {
-                        sellCount = Math.Floor(sellCount);
-                    }
-
-
-                    if ((ceditsInCargo >= (sellPrice * sellCount)) && (sellCount > 0))
-                    {
-                        ceditsInCargo = sellPrice * sellCount;
                         var removeCreditsFromCargo = InventoryApi.RemoveFromInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits), ceditsInCargo);
+                        Logger.Log("Sellcount:" + sellCount + "  Credits:" + ceditsInCargo+ "   Taken credits: " + removeCreditsFromCargo);
+
                         if (removeCreditsFromCargo != 0)
                         {
-                            if (ceditsInCargo != removeCreditsFromCargo) MyAPIGateway.Utilities.ShowMessage("DebugWarning:", "pay/remove " + ceditsInCargo.ToString("0.00##") + "/" + removeCreditsFromCargo.ToString("0.00##"));
+                            //if (ceditsInCargo != removeCreditsFromCargo) MyAPIGateway.Utilities.ShowMessage("DebugWarning:", "pay/remove " + ceditsInCargo.ToString("0.00##") + "/" + removeCreditsFromCargo.ToString("0.00##"));
                             InventoryApi.AddToInventory(cargoBlock, itemDefinition, sellCount);
                             tradeItem.CurrentCargo -= sellCount;
                         }
+                    }
+                    catch (Exceptions.UnknownItemException)
+                    {
+                        //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
                     }
                 }
             }

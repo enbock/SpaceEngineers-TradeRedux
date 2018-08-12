@@ -14,15 +14,13 @@ using TradeEngineers.PluginApi;
 namespace TradeEngineers
 {
     [MyEntityComponentDescriptor(
-        typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel), 
-        false
-        /*new string[]
+        typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel),
+        false,
+        new string[]
         {
-            "SmallTradeInputLCDPanel",
-            "SmallTradeInputLCDPanelWide",
-            "LargeTradeInputLCDPanel",
-            "LargeTradeInputTextPanel"
-        }*/
+            "TradeRedux_SmallLCDPanelWide",
+            "TradeRedux_LargeLCDPanelWide"
+        }
     )]
     public class TradeBlock : MyGameLogicComponent
     {
@@ -36,12 +34,10 @@ namespace TradeEngineers
         private DateTime StationLastSaved = DateTime.MinValue;
         public StationBase Station = null;
 
-        private bool IsInit = false;
-
         public override void Close()
         {
-            //if (Entity != null && LcdPanel != null && LcdPanel.IsFunctional && LcdPanel.IsWorking && LcdPanel.Enabled)
-            //Save(Station);
+            if (Entity != null && LcdPanel != null && LcdPanel.IsFunctional && LcdPanel.IsWorking && LcdPanel.Enabled)
+                Save(Station);
 
             LcdPanel = null;
             Logger.Close();
@@ -49,15 +45,14 @@ namespace TradeEngineers
 
         public override void Init(VRage.ObjectBuilders.MyObjectBuilder_EntityBase objectBuilder)
         {
-            //if (IsInit) return;
-            IsInit = true;
-
-            Log("Init.");
             _objectBuilder = objectBuilder;
 
             LcdPanel = (Entity as Sandbox.ModAPI.IMyTextPanel);
-            if (LcdPanel != null && LcdPanel.BlockDefinition.SubtypeName.Contains("TradeInput"))
+            if (LcdPanel != null)
             {
+                Log("Welcome to Trade Engeneers Redux");
+                Log("Rename this Block to wanted Station Type. Eample: 'TradeStation'");
+
                 NeedsUpdate = MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
             }
 
@@ -84,7 +79,15 @@ namespace TradeEngineers
         {
             if (LcdPanel == null) return;
 
+            LcdPanel.ShowPublicTextOnScreen();
+
             if (!NetWorkTransmitter.IsSinglePlayerOrServer() ?? true) return;
+
+            if (Station == null)
+            {
+                Station = Load();
+                if (Station != null) StationManager.Register(this);
+            }
 
             //Wenn nicht Defekt und Energie 
             if (LcdPanel.IsFunctional && LcdPanel.IsWorking && LcdPanel.Enabled && Station != null)
@@ -108,6 +111,7 @@ namespace TradeEngineers
 
                         LCDOutput.FillSellBuyOnLcds(LcdPanel, Station, true);
                     }
+                    
                     //Production Update alle 1Mins ? Hier müssen wir wohl etwas experimentieren sobald alles drumherum funktioniert
                     int produpdatetime = 10; //[s]
                     if ((DateTime.Now - ProdctionCycleLastUpdate) > TimeSpan.FromSeconds(produpdatetime))
@@ -116,7 +120,6 @@ namespace TradeEngineers
                         ProdctionCycleLastUpdate = DateTime.Now;
                     }
                     //MyAPIGateway.Utilities.ShowMessage("Last Prod", (DateTime.Now - ProdCycleUpdateTime).TotalSeconds.ToString());
-
                     IMyCubeGrid _grid = (IMyCubeGrid)LcdPanel.GetTopMostParent();
                     if (_grid != null)
                     {
@@ -129,18 +132,9 @@ namespace TradeEngineers
                 }
                 catch (Exception ex)
                 {
-                    Log(ex.Message);
-                    //MyAPIGateway.Utilities.ShowMissionScreen("Exception occurred!", null, null, ex.Message);
+                    Log("Update Error:" + ex.Message);
                 }
 
-            }
-            else
-            {
-                if ((DateTime.Now - DisplayUpdateTime) > TimeSpan.FromSeconds(10)) //Soll Änderungen am Modus ermöglichen
-                {
-                    Station = Load(); //Achtung wenn station schon belegt ist wird keine neue gewählt
-                    DisplayUpdateTime = DateTime.Now;
-                }
             }
         }
 
@@ -154,13 +148,9 @@ namespace TradeEngineers
 
         public override void UpdateOnceBeforeFrame()
         {
-
             var server = NetWorkTransmitter.IsSinglePlayerOrServer();
             if (server.HasValue && server.Value)
             {
-                Log("Start load station.");
-                Station = Load();
-                StationManager.Register(this);
                 NeedsUpdate = MyEntityUpdateEnum.EACH_10TH_FRAME;
             }
             else if (!server.HasValue)
@@ -169,17 +159,16 @@ namespace TradeEngineers
             }
 
         }
-        
+
         // return the object defined in Init()
         public override VRage.ObjectBuilders.MyObjectBuilder_EntityBase GetObjectBuilder(bool copy = false)
         {
             return _objectBuilder;
             //return copy ? (VRage.ObjectBuilders.MyObjectBuilder_EntityBase)_objectBuilder.Clone() : _objectBuilder;
         }
-        
+
         private StationBase Load()
         {
-            Log("Load station");
             if (LcdPanel == null)
                 return null;
 
@@ -208,7 +197,6 @@ namespace TradeEngineers
                     //The SE XMLSerializer wont detect the subclass needed by parsing XML, thus we need to specify the type!                 
                     if (stationData.IndexOf("<TradeStation", tagEndOffset + 1, 40) != -1)
                     {
-                        Log("FOUND station");
                         return MyAPIGateway.Utilities.SerializeFromXML<TradeStation>(stationData);
                     }
 
@@ -221,12 +209,12 @@ namespace TradeEngineers
 
             try
             {
-                Log("New Station");
                 return StationBase.Factory(LcdPanel.CustomName ?? LcdPanel.CustomNameWithFaction, LcdPanel.OwnerId);
             }
             catch (ArgumentException)
             {
-                Log("StationTypeError: Name the Block is not expected.\n (" + LcdPanel.CustomName + " / " + LcdPanel.CustomNameWithFaction + ")\n");
+                //Log("StationTypeError: Name the Block is not expected: " + LcdPanel.CustomName + " / " + LcdPanel.CustomNameWithFaction);
+                // just wait for correct name
             }
 
             return null;
@@ -259,10 +247,24 @@ namespace TradeEngineers
                 Log("ERROR serializing XML for '" + (grid.CustomName ?? grid.Name) + "': " + e.Message);
             }
         }
-        
-        public static void Log(string text)
+
+        public void Log(string text)
         {
-            Logger.Log(text);
+            string line = Logger.Log(text);
+            if (LcdPanel != null)
+            {
+                List<string> output = new List<string>();
+                output.AddArray(LcdPanel.GetPublicText().Split('\n'));
+                if (output.Count > 18)
+                {
+                    while (output.Count > 17)
+                    {
+                        output.RemoveAt(0);
+                    }
+                    LcdPanel.WritePublicText(string.Join("\n", output.ToArray()));
+                }
+                LcdPanel.WritePublicText(line + "\n", true);
+            }
         }
 
     }
