@@ -260,10 +260,7 @@ namespace TradeEngineers.SerializedTradeStorage
                 {
                     itemCount = (tradeItem.CargoSize - tradeItem.CurrentCargo);
                 }
-                if (!(ItemDefinitionFactory.Ores.Contains(tradeItem.Definition) || ItemDefinitionFactory.Ingots.Contains(tradeItem.Definition)))
-                {
-                    itemCount = Math.Floor(itemCount);
-                }
+                itemCount = Math.Floor(itemCount);
                 //MyAPIGateway.Utilities.ShowMessage("OreCnt1", "" + itemcount);
 
                 var removedItemsCount = InventoryApi.RemoveFromInventory(cargoBlock, tradeItem.Definition, itemCount);
@@ -273,7 +270,10 @@ namespace TradeEngineers.SerializedTradeStorage
                     //MyAPIGateway.Utilities.ShowMessage("OreCnt2", "" + removedvalue);
                     try
                     {
-                        InventoryApi.AddToInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits), (buyPrice * removedItemsCount));
+                        double paymentAmount = Math.Floor(buyPrice * removedItemsCount);
+                        InventoryApi.AddToInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits), paymentAmount);
+
+                        Logger.Log("Buy:" + itemCount + "  Payed Credits:" + paymentAmount + "   Taken item: " + removedItemsCount);
                     }
                     catch (Exceptions.UnknownItemException)
                     {
@@ -287,14 +287,14 @@ namespace TradeEngineers.SerializedTradeStorage
         {
             PriceModel pricing = tradeItem.PriceModel;
             MyDefinitionId itemDefinition = tradeItem.Definition;
-            
-            var maximumItemsPerTransfer = tradeItem.CargoSize * 0.01; //10% of max
 
-            var ceditsInCargo = InventoryApi.CountItemsInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits));
+            double maximumItemsPerTransfer = tradeItem.CargoSize * 0.01f; //10% of max
+
+            double ceditsInCargo = InventoryApi.CountItemsInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits));
             if (ceditsInCargo > 0)
             {
-                var sellPrice = pricing.GerSellPrice(tradeItem.CargoRatio);
-                var sellCount = ceditsInCargo / sellPrice;
+                double sellPrice = pricing.GerSellPrice(tradeItem.CargoRatio);
+                double sellCount = ceditsInCargo / sellPrice;
 
                 if (sellCount > maximumItemsPerTransfer) sellCount = maximumItemsPerTransfer;
 
@@ -303,23 +303,19 @@ namespace TradeEngineers.SerializedTradeStorage
                     sellCount = tradeItem.CurrentCargo;
                 }
 
-                if (!(ItemDefinitionFactory.Ores.Contains(itemDefinition) || ItemDefinitionFactory.Ingots.Contains(itemDefinition)))
-                {
-                    sellCount = Math.Floor(sellCount);
-                }
+                sellCount = Math.Floor(sellCount);
+                double paymentAmount = Math.Ceiling(sellPrice * sellCount);
 
-                
-                if ((ceditsInCargo >= (sellPrice * sellCount)) && (sellCount > 0))
+                if (ceditsInCargo >= paymentAmount && (sellCount > 0))
                 {
-                    ceditsInCargo = sellPrice * sellCount;
                     try
                     {
-                        var removeCreditsFromCargo = InventoryApi.RemoveFromInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits), ceditsInCargo);
-                        Logger.Log("Sellcount:" + sellCount + "  Credits:" + ceditsInCargo+ "   Taken credits: " + removeCreditsFromCargo);
+                        double removeCreditsFromCargo = InventoryApi.RemoveFromInventory(cargoBlock, ItemDefinitionFactory.DefinitionFromString(Definitions.Credits), paymentAmount);
+                        Logger.Log("Sellcount:" + sellCount + "  Credits:" + ceditsInCargo + "   Taken credits: " + removeCreditsFromCargo);
 
                         if (removeCreditsFromCargo != 0)
                         {
-                            //if (ceditsInCargo != removeCreditsFromCargo) MyAPIGateway.Utilities.ShowMessage("DebugWarning:", "pay/remove " + ceditsInCargo.ToString("0.00##") + "/" + removeCreditsFromCargo.ToString("0.00##"));
+                            if (paymentAmount != removeCreditsFromCargo) Logger.Log("pay/remove " + ceditsInCargo.ToString("0.00##") + "/" + removeCreditsFromCargo.ToString("0.00##"));
                             InventoryApi.AddToInventory(cargoBlock, itemDefinition, sellCount);
                             tradeItem.CurrentCargo -= sellCount;
                         }
