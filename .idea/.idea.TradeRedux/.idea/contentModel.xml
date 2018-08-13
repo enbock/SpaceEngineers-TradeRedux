@@ -27,6 +27,7 @@
               <e p="TradeItem.cs" t="Include" />
             </e>
             <e p="Stations" t="Include">
+              <e p="README.md" t="Include" />
               <e p="StationBase.cs" t="Include" />
               <e p="TradeStation.cs" t="Include" />
             </e>
