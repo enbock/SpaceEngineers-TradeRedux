@@ -6,12 +6,12 @@ using VRage.ModAPI;
 using Sandbox.ModAPI.Ingame;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
-using TradeEngineers.SerializedTradeStorage;
-using TradeEngineers.InputOutput;
+using TradeRedux.SerializedTradeStorage;
+using TradeRedux.InputOutput;
 using System.Text;
-using TradeEngineers.PluginApi;
+using TradeRedux.PluginApi;
 
-namespace TradeEngineers
+namespace TradeRedux
 {
     [MyEntityComponentDescriptor(
         typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel),

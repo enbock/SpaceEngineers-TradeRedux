@@ -1,7 +1,7 @@
 ﻿using System;
 using Sandbox.ModAPI;
 
-namespace TradeEngineers.PluginApi
+namespace TradeRedux.PluginApi
 {
     public class Logger
     {
