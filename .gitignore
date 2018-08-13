@@ -11,19 +11,19 @@
 *.userprefs
 
 # Build results
-Data/Scripts/TradeRedux/[Dd]ebug/
-Data/Scripts/TradeRedux/[Dd]ebugPublic/
-Data/Scripts/TradeRedux/[Rr]elease/
-Data/Scripts/TradeRedux/[Rr]eleases/
-Data/Scripts/TradeRedux/x64/
-Data/Scripts/TradeRedux/x86/
-Data/Scripts/TradeRedux/bld/
-Data/Scripts/TradeRedux/[Bb]in/
-Data/Scripts/TradeRedux/[Oo]bj/
-Data/Scripts/TradeRedux/[Ll]og/
-Data/Scripts/TradeRedux/TradeRedux.cs*
-TradeRedux.*
+Data/Scripts/Elitesuppe/[Dd]ebug/
+Data/Scripts/Elitesuppe/[Dd]ebugPublic/
+Data/Scripts/Elitesuppe/[Rr]elease/
+Data/Scripts/Elitesuppe/[Rr]eleases/
+Data/Scripts/Elitesuppe/x64/
+Data/Scripts/Elitesuppe/x86/
+Data/Scripts/Elitesuppe/bld/
+Data/Scripts/Elitesuppe/[Bb]in/
+Data/Scripts/Elitesuppe/[Oo]bj/
+Data/Scripts/Elitesuppe/[Ll]og/
+Elitesuppe.*
 modinfo.sbmi
+Data/Scripts/Elitesuppe/*.csproj
 
 # Visual Studio 2015 cache/options directory
 .vs/

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F712066A-706F-403E-B4A7-B73CE16B7476}"
+	ProjectSection(SolutionItems) = preProject
+		Data\CubeBlocks.sbc = Data\CubeBlocks.sbc
+		Thumb.jpg = Thumb.jpg
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Elitesuppe", "Data\Scripts\Elitesuppe\Elitesuppe.csproj", "{EBDF9B6E-C9B1-496A-93EE-B5CC1CEADEAD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EBDF9B6E-C9B1-496A-93EE-B5CC1CEADEAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBDF9B6E-C9B1-496A-93EE-B5CC1CEADEAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBDF9B6E-C9B1-496A-93EE-B5CC1CEADEAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBDF9B6E-C9B1-496A-93EE-B5CC1CEADEAD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C4BD369B-E37A-4234-B08D-35B58BEE25CB}
+	EndGlobalSection
+EndGlobal
