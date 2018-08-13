@@ -21,7 +21,7 @@ namespace Elitesuppe.Trade.Serialized.Items
             int currentCargo = 500
         )
         {
-            Definition = itemType;
+            _definition = itemType;
             PriceModel = priceModel;
             CargoSize = cargoSize;
             CurrentCargo = currentCargo;
@@ -40,7 +40,7 @@ namespace Elitesuppe.Trade.Serialized.Items
         {
             try
             {
-                Definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
+                _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
                 PriceModel = priceModel;
                 CargoSize = cargoSize;
                 CurrentCargo = currentCargo;
@@ -53,7 +53,14 @@ namespace Elitesuppe.Trade.Serialized.Items
             }
         }
 
-        public MyDefinitionId Definition { get; private set; }
+        private MyDefinitionId _definition;
+        public MyDefinitionId Definition
+        {
+            get
+            {
+                return _definition;
+            }
+        }
 
         public string SerializedDefinition
         {
@@ -63,7 +70,7 @@ namespace Elitesuppe.Trade.Serialized.Items
             {
                 try
                 {
-                    Definition = Inventory.ItemDefinitionFactory.DefinitionFromString(value);
+                    _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(value);
                 }
                 catch (Exceptions.UnknownItemException)
                 {
@@ -80,7 +87,10 @@ namespace Elitesuppe.Trade.Serialized.Items
 
         public double CargoSize { get; set; } = double.MaxValue;
 
-        public double CargoRatio => 1f / CargoSize * CurrentCargo;
+        public double CargoRatio
+        {
+            get { return 1f / CargoSize * CurrentCargo; }
+        }
 
         public PriceModel PriceModel = new PriceModel(1.0);
 

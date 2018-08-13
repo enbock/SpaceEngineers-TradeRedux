@@ -14,11 +14,11 @@ namespace Elitesuppe.Trade.Serialized.Stations
     [System.Xml.Serialization.XmlRoot(Namespace = Definitions.Version)]
     public class TradeStation : StationBase
     {
-        public const string StationType = "TradeStation";
-        public TradeStation() { }
-        
         public double ProduceFrom = 0.25f;
         public double ReduceFrom = 0.75f;
+        public const string StationType = "TradeStation";
+        
+        public TradeStation() { }
 
         public TradeStation(long ownerId) : base(ownerId, StationType)
         {
@@ -28,7 +28,6 @@ namespace Elitesuppe.Trade.Serialized.Stations
 
         public override void HandleProdCycle()
         {
-
             IEnumerable<TradeItem> productionItems = Goods.Where(good => good.CargoRatio < ProduceFrom || good.CargoRatio > ReduceFrom);
 
             foreach (TradeItem tradeItem in productionItems)

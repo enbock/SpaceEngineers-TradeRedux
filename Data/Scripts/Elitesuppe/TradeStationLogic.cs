@@ -84,7 +84,7 @@ namespace Elitesuppe
             const int productionTime = 10;
             try
             {
-                if (DateTime.Now.Subtract(_lastSaved).TotalSeconds > 60) // Save Trade Station Object every 5 min or so
+                if (DateTime.Now.Subtract(_lastSaved).TotalSeconds > 30) // Save Trade Station Object every 5 min or so
                 {
                     Save(Station);
                 }
@@ -233,9 +233,9 @@ namespace Elitesuppe
             
             List<string> output = new List<string>();
             output.AddArray(LcdPanel.GetPublicText().Split('\n'));
-            if (output.Count > 18)
+            if (output.Count > 17)
             {
-                while (output.Count > 17)
+                while (output.Count > 16)
                 {
                     output.RemoveAt(0);
                 }
