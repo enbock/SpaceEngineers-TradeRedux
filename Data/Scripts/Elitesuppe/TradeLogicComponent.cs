@@ -12,7 +12,7 @@ using VRage.ObjectBuilders;
 
 namespace Elitesuppe
 {
-    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TextPanel),false, "ElitesuppeTradeRedux_LargeLCDPanelWide")]
+    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TextPanel), false, "ElitesuppeTradeRedux_LargeLCDPanelWide")]
     public class TradeLogicComponent : MyGameLogicComponent
     {
         private MyObjectBuilder_EntityBase _objectBuilder;
@@ -45,12 +45,10 @@ namespace Elitesuppe
 
                 NeedsUpdate = MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
             }
-
         }
 
         public override void MarkForClose()
         {
-
         }
 
         public override void UpdateAfterSimulation()
@@ -88,6 +86,7 @@ namespace Elitesuppe
                 {
                     Save(Station);
                 }
+
                 if ((DateTime.Now - _displayUpdateTime) > TimeSpan.FromMilliseconds(1000))
                 {
                     /*
@@ -101,18 +100,24 @@ namespace Elitesuppe
 
                     LCDOutput.FillSellBuyOnLcds(LcdPanel, Station, true);
                 }
-                    
+
                 //Production Update alle 1Mins
                 if ((DateTime.Now - _lastProductionUpdate) > TimeSpan.FromSeconds(productionTime))
                 {
                     Station.HandleProdCycle();
                     _lastProductionUpdate = DateTime.Now;
                 }
+
                 //MyAPIGateway.Utilities.ShowMessage("Last Prod", (DateTime.Now - ProdCycleUpdateTime).TotalSeconds.ToString());
-                IMyCubeGrid grid = (IMyCubeGrid)LcdPanel.GetTopMostParent();
+                IMyCubeGrid grid = (IMyCubeGrid) LcdPanel.GetTopMostParent();
                 if (grid == null) return;
                 List<IMySlimBlock> cargoBlockList = new List<IMySlimBlock>();
-                grid.GetBlocks(cargoBlockList, e => e != null && e.FatBlock != null && e.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_CargoContainer));
+                grid.GetBlocks(
+                    cargoBlockList,
+                    e => e != null &&
+                         e.FatBlock != null &&
+                         e.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_CargoContainer)
+                );
 
                 Station.HandleCargo(cargoBlockList);
             }
@@ -141,7 +146,6 @@ namespace Elitesuppe
             {
                 NeedsUpdate = MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
             }
-
         }
 
         // return the object defined in Init()
@@ -165,7 +169,11 @@ namespace Elitesuppe
                 {
                     if (stationData.IndexOf(Definitions.Version, tagEndOffset + 1, 400, StringComparison.Ordinal) == -1)
                     {
-                        Log("The persisted station definition was in an old format. (" + LcdPanel.CustomName + ") Station will be reset to defaults!");
+                        Log(
+                            "The persisted station definition was in an old format. (" +
+                            LcdPanel.CustomName +
+                            ") Station will be reset to defaults!"
+                        );
                         LcdPanel.CustomData = string.Empty;
                         throw new InvalidOperationException("Old format");
                     }
@@ -175,7 +183,6 @@ namespace Elitesuppe
                     {
                         return MyAPIGateway.Utilities.SerializeFromXML<TradeStation>(stationData);
                     }
-
                 }
                 catch (InvalidOperationException e)
                 {
@@ -204,6 +211,7 @@ namespace Elitesuppe
             {
                 return;
             }
+
             if (LcdPanel == null)
             {
                 return;
@@ -228,9 +236,9 @@ namespace Elitesuppe
         {
             string line = text; //Logger.Log(text);
             MyAPIGateway.Utilities.ShowMessage("TE-Log", line);
-            
+
             if (LcdPanel == null) return;
-            
+
             List<string> output = new List<string>();
             output.AddArray(LcdPanel.GetPublicText().Split('\n'));
             if (output.Count > 17)
@@ -239,12 +247,11 @@ namespace Elitesuppe
                 {
                     output.RemoveAt(0);
                 }
+
                 LcdPanel.WritePublicText(string.Join("\n", output.ToArray()));
             }
+
             LcdPanel.WritePublicText(line + "\n", true);
-
         }
-
     }
 }
-
