@@ -11,18 +11,18 @@
 *.userprefs
 
 # Build results
-Data/Scripts/TradeEngineers/[Dd]ebug/
-Data/Scripts/TradeEngineers/[Dd]ebugPublic/
-Data/Scripts/TradeEngineers/[Rr]elease/
-Data/Scripts/TradeEngineers/[Rr]eleases/
-Data/Scripts/TradeEngineers/x64/
-Data/Scripts/TradeEngineers/x86/
-Data/Scripts/TradeEngineers/bld/
-Data/Scripts/TradeEngineers/[Bb]in/
-Data/Scripts/TradeEngineers/[Oo]bj/
-Data/Scripts/TradeEngineers/[Ll]og/
-Data/Scripts/TradeEngineers/TradeEngineers.cs*
-TradeEngineers.*
+Data/Scripts/TradeRedux/[Dd]ebug/
+Data/Scripts/TradeRedux/[Dd]ebugPublic/
+Data/Scripts/TradeRedux/[Rr]elease/
+Data/Scripts/TradeRedux/[Rr]eleases/
+Data/Scripts/TradeRedux/x64/
+Data/Scripts/TradeRedux/x86/
+Data/Scripts/TradeRedux/bld/
+Data/Scripts/TradeRedux/[Bb]in/
+Data/Scripts/TradeRedux/[Oo]bj/
+Data/Scripts/TradeRedux/[Ll]og/
+Data/Scripts/TradeRedux/TradeRedux.cs*
+TradeRedux.*
 modinfo.sbmi
 
 # Visual Studio 2015 cache/options directory
