@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\xboxl\.Rider2018.2\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\xboxl\.Rider2018.2\system\resharper-host\Local\Transient\ReSharperHost\v182\SolutionCaches\_TradeRedux.64573781.00" t="ExcludeRecursive" />
+    <e p="C:\Users\xboxl\AppData\Roaming\SpaceEngineers\Mods\TradeEngineers Redux" t="IncludeFlat">
+      <e p="Data\CubeBlocks.sbc" t="Include" />
+      <e p="Data\Scripts\Elitesuppe" t="IncludeRecursive">
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="ChatInput.cs" t="Include" />
+        <e p="Elitesuppe.csproj" t="IncludeRecursive" />
+        <e p="obj" t="ExcludeRecursive" />
+        <e p="Trade" t="Include">
+          <e p="Definitions.cs" t="Include" />
+          <e p="Exceptions" t="Include">
+            <e p="TradeEngineersException.cs" t="Include" />
+            <e p="UnknownItemException.cs" t="Include" />
+          </e>
+          <e p="Inventory" t="Include">
+            <e p="InventoryApi.cs" t="Include" />
+            <e p="ItemDefinitionFactory.cs" t="Include" />
+          </e>
+          <e p="LCDOutput.cs" t="Include" />
+          <e p="NetWorkTransmitter.cs" t="Include" />
+          <e p="Serialized" t="Include">
+            <e p="Items" t="Include">
+              <e p="TradeItem.cs" t="Include" />
+            </e>
+            <e p="Stations" t="Include">
+              <e p="StationBase.cs" t="Include" />
+              <e p="TradeStation.cs" t="Include" />
+            </e>
+          </e>
+          <e p="StationManager.cs" t="Include" />
+          <e p="TradeEngineersHelp.cs" t="Include" />
+          <e p="TradeGoods" t="Include">
+            <e p="PriceFinder.cs" t="Include" />
+            <e p="PriceModel.cs" t="Include" />
+          </e>
+        </e>
+        <e p="TradeStationLogic.cs" t="Include" />
+      </e>
+      <e p="packages" t="ExcludeRecursive" />
+      <e p="Solution Items" t="Include" />
+      <e p="Thumb.jpg" t="Include" />
+      <e p="TradeRedux.sln" t="IncludeFlat" />
+    </e>
+  </component>
+</project>
