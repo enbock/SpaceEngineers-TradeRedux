@@ -4,62 +4,6 @@
     <Definition xsi:type="MyObjectBuilder_TextPanelDefinition">
       <Id>
         <TypeId>TextPanel</TypeId>
-        <SubtypeId>TradeRedux_SmallLCDPanelWide</SubtypeId>
-      </Id>
-      <DisplayName>Trade Station Redux</DisplayName>
-      <Icon>Textures\GUI\Icons\Cubes\LCDPanelWide.dds</Icon>
-      <CubeSize>Small</CubeSize>
-      <GuiVisible>false</GuiVisible>
-      <BlockTopology>TriangleMesh</BlockTopology>
-      <Size x="6" y="3" z="1" />
-      <ModelOffset x="0" y="0" z="0" />
-      <Model>Models\Cubes\Small\LCDPanelWide.mwm</Model>
-      <Components>
-        <Component Subtype="AdminToken" Count="1" />
-        <Component Subtype="Computer" Count="1" />
-        <Component Subtype="SteelPlate" Count="1" />
-      </Components>
-      <CriticalComponent Subtype="Computer" Index="0" />
-      <MountPoints>
-        <MountPoint Side="Front" StartX="0" StartY="0" EndX="6" EndY="3" Default="true"/>
-        <MountPoint Side="Left" StartX="0" StartY="0" EndX="0.1" EndY="3" />
-        <MountPoint Side="Right" StartX="0.9" StartY="0" EndX="1" EndY="3" />
-        <MountPoint Side="Top" StartX="0" StartY="0.9" EndX="6" EndY="1" />
-        <MountPoint Side="Bottom" StartX="0" StartY="0" EndX="6" EndY="0.1" />
-      </MountPoints>
-      <BuildProgressModels>
-        <Model BuildPercentUpperBound="1.00" File="Models\Cubes\small\LCDPanelWide_Construction_1.mwm" />
-      </BuildProgressModels>
-      <VoxelPlacement>
-        <!--Possible settings Both,InVoxel,OutsideVoxel,Volumetric. If volumetric set than MaxAllowed and MinAllowed will be used.-->
-        <StaticMode>
-          <PlacementMode>OutsideVoxel</PlacementMode>
-          <MaxAllowed>0.4</MaxAllowed>
-          <MinAllowed>0</MinAllowed>
-        </StaticMode>
-        <DynamicMode>
-          <PlacementMode>OutsideVoxel</PlacementMode>
-          <MaxAllowed>0.4</MaxAllowed>
-          <MinAllowed>0.01</MinAllowed>
-        </DynamicMode>
-      </VoxelPlacement>
-      <BlockPairName>Trade_Station</BlockPairName>
-      <MirroringZ>Y</MirroringZ>
-      <EdgeType>Light</EdgeType>
-      <BuildTimeSeconds>5</BuildTimeSeconds>
-      <ResourceSinkGroup>Utility</ResourceSinkGroup>
-      <RequiredPowerInput>0.0002</RequiredPowerInput>
-      <TextureResolution>512</TextureResolution>
-      <TextureAspectRadio>2</TextureAspectRadio>
-      <DamageEffectName>Damage_Electrical_Damaged</DamageEffectName>
-      <DamagedSound>ParticleElectrical</DamagedSound>
-      <DestroyEffect>BlockDestroyedExplosion_Small</DestroyEffect>
-      <DestroySound>WepSmallWarheadExpl</DestroySound>
-      <PCU>5</PCU>
-    </Definition>
-    <Definition xsi:type="MyObjectBuilder_TextPanelDefinition">
-      <Id>
-        <TypeId>TextPanel</TypeId>
         <SubtypeId>TradeRedux_LargeLCDPanelWide</SubtypeId>
       </Id>
       <DisplayName>Trade Station Redux</DisplayName>
@@ -106,6 +50,57 @@
       <DestroySound>WepSmallWarheadExpl</DestroySound>
       <PCU>5</PCU>
     </Definition>
+    <Definition xsi:type="MyObjectBuilder_TextPanelDefinition">
+      <Id>
+        <TypeId>TextPanel</TypeId>
+        <SubtypeId>ElitesueppeTradeRedux_LargeLCDPanelWide</SubtypeId>
+      </Id>
+      <DisplayName>Elitesuppe Trade Station Redux</DisplayName>
+      <Icon>Textures\GUI\Icons\Cubes\LCDPanelWide.dds</Icon>
+      <CubeSize>Large</CubeSize>
+      <BlockTopology>TriangleMesh</BlockTopology>
+      <Size x="2" y="1" z="1" />
+      <ModelOffset x="0" y="0" z="0" />
+      <Model>Models\Cubes\Large\LCDPanelWide.mwm</Model>
+      <Components>
+        <Component Subtype="AdminToken" Count="1" />
+        <Component Subtype="Computer" Count="1" />
+        <Component Subtype="SteelPlate" Count="1" />
+      </Components>
+      <CriticalComponent Subtype="Computer" Index="0" />
+      <MountPoints>
+        <MountPoint Side="Front" StartX="0" StartY="0" EndX="2" EndY="1" Default="true"/>
+        <MountPoint Side="Left" StartX="0" StartY="0.1" EndX="0.1" EndY="0.9" />
+        <MountPoint Side="Right" StartX="0.9" StartY="0.1" EndX="1" EndY="0.9" />
+        <MountPoint Side="Top" StartX="0" StartY="0.9" EndX="2" EndY="1" />
+        <MountPoint Side="Bottom" StartX="0" StartY="0" EndX="2" EndY="0.1" />
+      </MountPoints>
+      <BuildProgressModels>
+        <Model BuildPercentUpperBound="0.50" File="Models\Cubes\Large\LCDPanelWide_Construction_1.mwm" />
+        <Model BuildPercentUpperBound="1.00" File="Models\Cubes\Large\LCDPanelWide_Construction_2.mwm" />
+      </BuildProgressModels>
+      <BlockPairName>Elitesuppe_Trade_Station</BlockPairName>
+      <MirroringZ>Y</MirroringZ>
+      <EdgeType>Light</EdgeType>
+      <BuildTimeSeconds>5</BuildTimeSeconds>
+      <ResourceSinkGroup>Utility</ResourceSinkGroup>
+      <RequiredPowerInput>0.0002</RequiredPowerInput>
+      <TextureResolution>512</TextureResolution>
+      <TextureAspectRadio>2</TextureAspectRadio>
+      <GuiVisible>false</GuiVisible>
+      <DamageEffectName>Damage_Electrical_Damaged</DamageEffectName>
+      <DamagedSound>ParticleElectrical</DamagedSound>
+      <DestroyEffect>BlockDestroyedExplosion_Large</DestroyEffect>
+      <DestroyEffectOffset>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>-1.1</Z>
+      </DestroyEffectOffset>
+      <DestroySound>WepSmallWarheadExpl</DestroySound>
+      <PCU>5</PCU>
+    </Definition>
+
+
   </CubeBlocks>
   <BlockPositions>
     <BlockPosition>
@@ -113,6 +108,13 @@
       <Position>
         <X>0</X>
         <Y>40</Y>
+      </Position>
+    </BlockPosition>
+    <BlockPosition>
+      <Name>Elitesuppe_Trade_Station</Name>
+      <Position>
+        <X>0</X>
+        <Y>41</Y>
       </Position>
     </BlockPosition>
   </BlockPositions>

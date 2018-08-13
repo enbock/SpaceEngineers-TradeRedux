@@ -1,28 +1,22 @@
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
+
 using VRage.Game;
 using VRage.ModAPI;
-using Sandbox.ModAPI.Ingame;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
-using TradeEngineers.SerializedTradeStorage;
-using TradeEngineers.InputOutput;
-using System.Text;
-using TradeEngineers.PluginApi;
 
-namespace TradeEngineers
+
+using Elitesuppe.Trade;
+using Elitesuppe.Trade.Serialized.Stations;
+
+
+
+namespace Elitesuppe.Trade
 {
-    [MyEntityComponentDescriptor(
-        typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel),
-        false,
-        new string[]
-        {
-            "TradeRedux_SmallLCDPanelWide",
-            "TradeRedux_LargeLCDPanelWide"
-        }
-    )]
-    public class TradeBlock : MyGameLogicComponent
+    [MyEntityComponentDescriptor(typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel),false,new string[]{"ElitesueppeTradeRedux_LargeLCDPanelWide"})]
+    public class TradeStationLogic : MyGameLogicComponent
     {
         private VRage.ObjectBuilders.MyObjectBuilder_EntityBase _objectBuilder;
         private DateTime DisplayUpdateTime = DateTime.MinValue;
@@ -40,7 +34,7 @@ namespace TradeEngineers
                 Save(Station);
 
             LcdPanel = null;
-            Logger.Close();
+            // Logger.Close();
         }
 
         public override void Init(VRage.ObjectBuilders.MyObjectBuilder_EntityBase objectBuilder)
@@ -50,8 +44,8 @@ namespace TradeEngineers
             LcdPanel = (Entity as Sandbox.ModAPI.IMyTextPanel);
             if (LcdPanel != null)
             {
-                Log("Welcome to Trade Engeneers Redux");
-                Log("Rename this Block to wanted Station Type. Eample: 'TradeStation'");
+                //Log("Welcome to Trade Engineers Redux");
+                //Log("Rename this Block to wanted Station Type. Example: 'TradeStation'");
 
                 NeedsUpdate = MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
             }
@@ -187,7 +181,7 @@ namespace TradeEngineers
                 var tagEndOffset = stationData.IndexOf("?>");
                 try
                 {
-                    if (stationData.IndexOf(Definitions.DataFormat, tagEndOffset + 1, 400) == -1)
+                    if (stationData.IndexOf(Definitions.VERSION, tagEndOffset + 1, 400) == -1)
                     {
                         Log("The persisted station definition was in an old format. (" + LcdPanel.CustomName + ") Station will be reset to defaults!");
                         LcdPanel.CustomData = string.Empty;
@@ -250,7 +244,8 @@ namespace TradeEngineers
 
         public void Log(string text)
         {
-            string line = Logger.Log(text);
+
+            string line = ""; // Logger.Log(text);
             if (LcdPanel != null)
             {
                 List<string> output = new List<string>();
@@ -265,6 +260,7 @@ namespace TradeEngineers
                 }
                 LcdPanel.WritePublicText(line + "\n", true);
             }
+            
         }
 
     }
