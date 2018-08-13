@@ -2,9 +2,9 @@
 
 namespace Elitesuppe.Trade
 {
-    public class Definitions
+    public static class Definitions
     {
-        public const string CREDITS = "Limiterium";
-        public const string VERSION = "0.0.1";
+        public const string Credits = "Limiterium";
+        public const string Version = "0.0.1";
     }
 }

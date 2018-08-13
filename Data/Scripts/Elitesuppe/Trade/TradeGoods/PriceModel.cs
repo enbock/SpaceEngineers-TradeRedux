@@ -29,7 +29,7 @@ namespace Elitesuppe.Trade.TradeGoods
             return preis;
         }
 
-        public double GerSellPrice(double cargoVolumePercent = 0.5)
+        public double GetSellPrice(double cargoVolumePercent = 0.5)
         {
             cargoVolumePercent = cargoVolumePercent > 1 ? 1 : cargoVolumePercent;
             var preis = Price * (1 + (MaxPercent - 1) * (1 - cargoVolumePercent));

@@ -1,6 +1,7 @@
 ﻿using System;
 using VRage.Game;
 using Sandbox.ModAPI;
+using Elitesuppe.Trade.TradeGoods;
 
 namespace Elitesuppe.Trade.Serialized.Items
 {
@@ -8,20 +9,20 @@ namespace Elitesuppe.Trade.Serialized.Items
     public class TradeItem
     {
         public TradeItem() { }
-        public TradeItem(MyDefinitionId itemType, TradeGoods.PriceModel priceModel, bool sell, bool buy, int cargoSize = 1000, int currentCargo = 500)
+        public TradeItem(MyDefinitionId itemType, PriceModel priceModel, bool sell, bool buy, int cargoSize = 1000, int currentCargo = 500)
         {
-            _definition = itemType;
+            Definition = itemType;
             PriceModel = priceModel;
             CargoSize = cargoSize;
             CurrentCargo = currentCargo;
             IsSell = sell;
             IsBuy = buy;
         }
-        public TradeItem(string itemType, TradeGoods.PriceModel priceModel, bool sell, bool buy, int cargoSize = 1000, int currentCargo = 500)
+        public TradeItem(string itemType, PriceModel priceModel, bool sell, bool buy, int cargoSize = 1000, int currentCargo = 500)
         {
             try
             {
-                _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
+                Definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
                 PriceModel = priceModel;
                 CargoSize = cargoSize;
                 CurrentCargo = currentCargo;
@@ -34,27 +35,17 @@ namespace Elitesuppe.Trade.Serialized.Items
             }
         }
 
-        private MyDefinitionId _definition;
-        public MyDefinitionId Definition
-        {
-            get
-            {
-                return _definition;
-            }
-        }
+        public MyDefinitionId Definition { get; private set; }
 
         public string SerializedDefinition
         {
-            get
-            {
-                return Definition.ToString();
-            }
+            get => Definition.ToString();
 
             set
             {
                 try
                 {
-                    _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(value);
+                    Definition = Inventory.ItemDefinitionFactory.DefinitionFromString(value);
                 }
                 catch (Exceptions.UnknownItemException)
                 {
@@ -71,15 +62,9 @@ namespace Elitesuppe.Trade.Serialized.Items
 
         public double CargoSize { get; set; } = double.MaxValue;
 
-        public double CargoRatio
-        {
-            get
-            {
-                return 1f / CargoSize * CurrentCargo;
-            }
-        }
+        public double CargoRatio => 1f / CargoSize * CurrentCargo;
 
-        public TradeGoods.PriceModel PriceModel = new TradeGoods.PriceModel(1.0);
+        public PriceModel PriceModel = new PriceModel(1.0);
 
         public override string ToString()
         {

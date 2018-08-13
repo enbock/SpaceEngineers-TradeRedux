@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 
 using Elitesuppe.Trade.Serialized;
 using Elitesuppe.Trade.Serialized.Stations;
+using Elitesuppe;
 
 namespace Elitesuppe.Trade
 {

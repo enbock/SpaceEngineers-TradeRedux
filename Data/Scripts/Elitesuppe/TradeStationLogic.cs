@@ -1,32 +1,28 @@
-using Sandbox.ModAPI;
-using System;
+ï»¿using System;
 using System.Collections.Generic;
-
-using VRage.Game;
-using VRage.ModAPI;
-using VRage.Game.Components;
-using VRage.Game.ModAPI;
-
-
 using Elitesuppe.Trade;
 using Elitesuppe.Trade.Serialized.Stations;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.ModAPI;
+using VRage.Game;
+using VRage.Game.Components;
+using VRage.Game.ModAPI;
+using VRage.ModAPI;
+using VRage.ObjectBuilders;
 
-
-
-namespace Elitesuppe.Trade
+namespace Elitesuppe
 {
-    [MyEntityComponentDescriptor(typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel),false,new string[]{"ElitesueppeTradeRedux_LargeLCDPanelWide"})]
+    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TextPanel),false, "ElitesuppeTradeRedux_LargeLCDPanelWide")]
     public class TradeStationLogic : MyGameLogicComponent
     {
-        private VRage.ObjectBuilders.MyObjectBuilder_EntityBase _objectBuilder;
-        private DateTime DisplayUpdateTime = DateTime.MinValue;
-        private DateTime ProdctionCycleLastUpdate = DateTime.MinValue;
+        private MyObjectBuilder_EntityBase _objectBuilder;
+        private DateTime _displayUpdateTime = DateTime.MinValue;
+        private DateTime _lastProductionUpdate = DateTime.MinValue;
 
-        private readonly String timeOfLoad = "" + DateTime.Now.Year + "." + DateTime.Now.Month + "." + DateTime.Now.Day + " " + DateTime.Now.Hour + "." + DateTime.Now.Minute + "." + DateTime.Now.Second;
-        public Sandbox.ModAPI.IMyTextPanel LcdPanel;
+        public IMyTextPanel LcdPanel;
 
-        private DateTime StationLastSaved = DateTime.MinValue;
-        public StationBase Station = null;
+        private DateTime _lastSaved = DateTime.MinValue;
+        public StationBase Station;
 
         public override void Close()
         {
@@ -37,11 +33,11 @@ namespace Elitesuppe.Trade
             // Logger.Close();
         }
 
-        public override void Init(VRage.ObjectBuilders.MyObjectBuilder_EntityBase objectBuilder)
+        public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
             _objectBuilder = objectBuilder;
 
-            LcdPanel = (Entity as Sandbox.ModAPI.IMyTextPanel);
+            LcdPanel = (Entity as IMyTextPanel);
             if (LcdPanel != null)
             {
                 //Log("Welcome to Trade Engineers Redux");
@@ -75,7 +71,7 @@ namespace Elitesuppe.Trade
 
             LcdPanel.ShowPublicTextOnScreen();
 
-            if (!NetWorkTransmitter.IsSinglePlayerOrServer() ?? true) return;
+            if (!NetworkTransmitter.IsSinglePlayerOrServer() ?? true) return;
 
             if (Station == null)
             {
@@ -84,51 +80,45 @@ namespace Elitesuppe.Trade
             }
 
             //Wenn nicht Defekt und Energie 
-            if (LcdPanel.IsFunctional && LcdPanel.IsWorking && LcdPanel.Enabled && Station != null)
+            if (!LcdPanel.IsFunctional || !LcdPanel.IsWorking || !LcdPanel.Enabled || Station == null) return;
+            const int productionTime = 10;
+            try
             {
-                try
+                if (DateTime.Now.Subtract(_lastSaved).TotalSeconds > 60) // Save Trade Station Object every 5 min or so
                 {
-                    if (DateTime.Now.Subtract(StationLastSaved).TotalSeconds > 60) /// Save Trade Station Object every 5 min or so
-                    {
-                        Save(Station);
-                    }
-                    if ((DateTime.Now - DisplayUpdateTime) > TimeSpan.FromMilliseconds(1000))
-                    {
-                        /*
-                        if (!string.IsNullOrWhiteSpace(myLcd.CustomName) && myLcd.CustomName.StartsWith("SETUP:")) // <---- eher für Reset geeignet!
+                    Save(Station);
+                }
+                if ((DateTime.Now - _displayUpdateTime) > TimeSpan.FromMilliseconds(1000))
+                {
+                    /*
+                        if (!string.IsNullOrWhiteSpace(myLcd.CustomName) && myLcd.CustomName.StartsWith("SETUP:"))
                             Station.SetupStation(myLcd, true);//second param: color
 
                         if (!string.IsNullOrWhiteSpace(myLcd.GetPublicTitle()) && myLcd.GetPublicTitle().StartsWith("SETUP:"))
                             Station.SetupStation(myLcd, true);//second param: color
                         */
-                        DisplayUpdateTime = DateTime.Now;
+                    _displayUpdateTime = DateTime.Now;
 
-                        LCDOutput.FillSellBuyOnLcds(LcdPanel, Station, true);
-                    }
+                    LCDOutput.FillSellBuyOnLcds(LcdPanel, Station, true);
+                }
                     
-                    //Production Update alle 1Mins ? Hier müssen wir wohl etwas experimentieren sobald alles drumherum funktioniert
-                    int produpdatetime = 10; //[s]
-                    if ((DateTime.Now - ProdctionCycleLastUpdate) > TimeSpan.FromSeconds(produpdatetime))
-                    {
-                        Station.HandleProdCycle(produpdatetime);
-                        ProdctionCycleLastUpdate = DateTime.Now;
-                    }
-                    //MyAPIGateway.Utilities.ShowMessage("Last Prod", (DateTime.Now - ProdCycleUpdateTime).TotalSeconds.ToString());
-                    IMyCubeGrid _grid = (IMyCubeGrid)LcdPanel.GetTopMostParent();
-                    if (_grid != null)
-                    {
-                        List<IMySlimBlock> cargoblocks = new List<IMySlimBlock>();
-                        _grid.GetBlocks(cargoblocks, e => e != null && e.FatBlock != null && e.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_CargoContainer));
-
-                        Station.HandleCargos(cargoblocks);
-
-                    }
-                }
-                catch (Exception ex)
+                //Production Update alle 1Mins
+                if ((DateTime.Now - _lastProductionUpdate) > TimeSpan.FromSeconds(productionTime))
                 {
-                    Log("Update Error:" + ex.Message);
+                    Station.HandleProdCycle();
+                    _lastProductionUpdate = DateTime.Now;
                 }
+                //MyAPIGateway.Utilities.ShowMessage("Last Prod", (DateTime.Now - ProdCycleUpdateTime).TotalSeconds.ToString());
+                IMyCubeGrid grid = (IMyCubeGrid)LcdPanel.GetTopMostParent();
+                if (grid == null) return;
+                List<IMySlimBlock> cargoBlockList = new List<IMySlimBlock>();
+                grid.GetBlocks(cargoBlockList, e => e != null && e.FatBlock != null && e.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_CargoContainer));
 
+                Station.HandleCargo(cargoBlockList);
+            }
+            catch (Exception ex)
+            {
+                Log("Update Error:" + ex.Message);
             }
         }
 
@@ -142,7 +132,7 @@ namespace Elitesuppe.Trade
 
         public override void UpdateOnceBeforeFrame()
         {
-            var server = NetWorkTransmitter.IsSinglePlayerOrServer();
+            var server = NetworkTransmitter.IsSinglePlayerOrServer();
             if (server.HasValue && server.Value)
             {
                 NeedsUpdate = MyEntityUpdateEnum.EACH_10TH_FRAME;
@@ -155,7 +145,7 @@ namespace Elitesuppe.Trade
         }
 
         // return the object defined in Init()
-        public override VRage.ObjectBuilders.MyObjectBuilder_EntityBase GetObjectBuilder(bool copy = false)
+        public override MyObjectBuilder_EntityBase GetObjectBuilder(bool copy = false)
         {
             return _objectBuilder;
             //return copy ? (VRage.ObjectBuilders.MyObjectBuilder_EntityBase)_objectBuilder.Clone() : _objectBuilder;
@@ -166,22 +156,14 @@ namespace Elitesuppe.Trade
             if (LcdPanel == null)
                 return null;
 
-            if ((LcdPanel as Sandbox.ModAPI.IMyTerminalBlock) == null)
-            {
-                Log("Lcd is no Terminal Block, thus no custom data field");
-                return null;
-            }
-
-
-
-            string stationData = (LcdPanel as Sandbox.ModAPI.IMyTerminalBlock).CustomData;
+            string stationData = LcdPanel.CustomData;
 
             if (!string.IsNullOrWhiteSpace(stationData) && stationData.Trim().StartsWith("<?xml"))
             {
-                var tagEndOffset = stationData.IndexOf("?>");
+                var tagEndOffset = stationData.IndexOf("?>", StringComparison.Ordinal);
                 try
                 {
-                    if (stationData.IndexOf(Definitions.VERSION, tagEndOffset + 1, 400) == -1)
+                    if (stationData.IndexOf(Definitions.Version, tagEndOffset + 1, 400, StringComparison.Ordinal) == -1)
                     {
                         Log("The persisted station definition was in an old format. (" + LcdPanel.CustomName + ") Station will be reset to defaults!");
                         LcdPanel.CustomData = string.Empty;
@@ -189,7 +171,7 @@ namespace Elitesuppe.Trade
                     }
 
                     //The SE XMLSerializer wont detect the subclass needed by parsing XML, thus we need to specify the type!                 
-                    if (stationData.IndexOf("<TradeStation", tagEndOffset + 1, 40) != -1)
+                    if (stationData.IndexOf("<TradeStation", tagEndOffset + 1, 40, StringComparison.Ordinal) != -1)
                     {
                         return MyAPIGateway.Utilities.SerializeFromXML<TradeStation>(stationData);
                     }
@@ -216,7 +198,7 @@ namespace Elitesuppe.Trade
 
         private void Save(StationBase station)
         {
-            StationLastSaved = DateTime.Now;
+            _lastSaved = DateTime.Now;
 
             if (station == null)
             {
@@ -232,35 +214,35 @@ namespace Elitesuppe.Trade
                 StationBase oldStationData = Load();
                 Station.TakeSettingData(oldStationData);
 
-                (LcdPanel as Sandbox.ModAPI.IMyTerminalBlock).CustomData = MyAPIGateway.Utilities.SerializeToXML(Station);
+                LcdPanel.CustomData = MyAPIGateway.Utilities.SerializeToXML(Station);
                 Log("Station saved.");
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                var grid = (LcdPanel.GetTopMostParent() as IMyCubeGrid);
-                Log("ERROR serializing XML for '" + (grid.CustomName ?? grid.Name) + "': " + e.Message);
+                //var grid = (LcdPanel.GetTopMostParent() as IMyCubeGrid);
+                //Log("ERROR serializing XML for '" + (grid.CustomName ?? grid.Name) + "': " + e.Message);
             }
         }
 
-        public void Log(string text)
+        private void Log(string text)
         {
+            return;
 
-            string line = ""; // Logger.Log(text);
-            if (LcdPanel != null)
-            {
-                List<string> output = new List<string>();
-                output.AddArray(LcdPanel.GetPublicText().Split('\n'));
-                if (output.Count > 18)
-                {
-                    while (output.Count > 17)
-                    {
-                        output.RemoveAt(0);
-                    }
-                    LcdPanel.WritePublicText(string.Join("\n", output.ToArray()));
-                }
-                LcdPanel.WritePublicText(line + "\n", true);
-            }
+            string line = Logger.Log(text);
+            if (LcdPanel == null) return;
             
+            List<string> output = new List<string>();
+            output.AddArray(LcdPanel.GetPublicText().Split('\n'));
+            if (output.Count > 18)
+            {
+                while (output.Count > 17)
+                {
+                    output.RemoveAt(0);
+                }
+                LcdPanel.WritePublicText(string.Join("\n", output.ToArray()));
+            }
+            LcdPanel.WritePublicText(line + "\n", true);
+
         }
 
     }

@@ -9,106 +9,125 @@ using Elitesuppe.Trade.Serialized.Stations;
 
 namespace Elitesuppe.Trade
 {
-    class LCDOutput
+    static class LCDOutput
     {
         public static void FillSellBuyOnLcds(IMyEntity entity, StationBase Station, bool connectedgrids = false)
         {
             //todo: erst String zusammenbauen dann senden
             IMyCubeGrid Base = (entity.GetTopMostParent() as IMyCubeGrid);
-            
-            List<IMySlimBlock> txtpanels = new List<IMySlimBlock>();
-            Base.GetBlocks(txtpanels, e => e != null && e.FatBlock != null && e.FatBlock.BlockDefinition.TypeId == typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel));
-                        
+
+            List<IMySlimBlock> textPanels = new List<IMySlimBlock>();
+            if (Base == null) return;
+            Base.GetBlocks(
+                textPanels,
+                e => e?.FatBlock != null &&
+                     e.FatBlock.BlockDefinition.TypeId ==
+                     typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel)
+            );
+
             if (connectedgrids)
             {
-                var connectedshipslist = StationBase.GetConnectedShips(entity);
+                var connectedShips = StationBase.GetConnectedShips(entity);
 
-                foreach(var connector in connectedshipslist.Keys)
+                foreach (var connector in connectedShips.Keys)
                 {
                     //MyAPIGateway.Utilities.ShowMessage("1", "" + connectedshipslist.Count);
-                    var grid = connectedshipslist[connector];
-                    if (grid != null)
-                    {
-                        List<IMySlimBlock> addpanels = new List<IMySlimBlock>();
-                        grid.GetBlocks(addpanels, e => e != null && e.FatBlock != null && e.FatBlock.BlockDefinition.TypeId == typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel));
-                        txtpanels.AddRange(addpanels);
-                    }
+                    var grid = connectedShips[connector];
+                    if (grid == null) continue;
+                    List<IMySlimBlock> panels = new List<IMySlimBlock>();
+                    grid.GetBlocks(
+                        panels,
+                        e => e?.FatBlock != null &&
+                             e.FatBlock.BlockDefinition.TypeId ==
+                             typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel)
+                    );
+                    textPanels.AddRange(panels);
                 }
             }
-            
+
             //
-            if (txtpanels.Count > 0)
+            if (textPanels.Count <= 0) return;
+            var buyBuilder = new StringBuilder();
+            var sellBuilder = new StringBuilder();
+            buyBuilder.AppendLine("StationName:" + Base.CustomName);
+            buyBuilder.AppendLine("StationType:" + Station.Type);
+            buyBuilder.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
+            buyBuilder.AppendLine("Buying: (actual cargo)");
+
+            sellBuilder.AppendLine("StationName:" + Base.CustomName);
+            sellBuilder.AppendLine("StationType:" + Station.Type);
+            sellBuilder.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
+            sellBuilder.AppendLine("Selling: (actual cargo)");
+            var goodsSelling = Station.Goods.Where(g => g.IsSell);
+            foreach (var tradeItem in goodsSelling)
             {
-                var buystringbuild = new StringBuilder();
-                var sellstringbuild = new StringBuilder();
-                buystringbuild.AppendLine("StationName:" + Base.CustomName);
-                buystringbuild.AppendLine("StationType:" + Station.Type);
-                buystringbuild.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
-                buystringbuild.AppendLine("Buying: (actual cargo)");
+                sellBuilder.AppendLine(
+                    tradeItem +
+                    ": " +
+                    (tradeItem.PriceModel.GetSellPrice(tradeItem.CargoRatio)).ToString("0.00##") +
+                    "$ (" +
+                    (tradeItem.CargoRatio * 100).ToString("0.#") +
+                    "% = " +
+                    GetStringFromDouble(tradeItem.CurrentCargo) +
+                    ")" +
+                    (tradeItem.PriceModel.IsProducent ? " [P]" : "")
+                );
+            }
 
-                sellstringbuild.AppendLine("StationName:" + Base.CustomName);
-                sellstringbuild.AppendLine("StationType:" + Station.Type);
-                sellstringbuild.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
-                sellstringbuild.AppendLine("Selling: (actual cargo)");
-                var goodsselling = Station.Goods.Where(g => g.IsSell);
-                foreach (var tradeitem in goodsselling)
+            var goodsBuying = Station.Goods.Where(g => g.IsBuy);
+            foreach (var tradeItem in goodsBuying)
+            {
+                buyBuilder.AppendLine(
+                    tradeItem +
+                    ": " +
+                    (tradeItem.PriceModel.GetBuyPrice(tradeItem.CargoRatio)).ToString("0.00##") +
+                    "$ (" +
+                    (tradeItem.CargoRatio * 100).ToString("0.#") +
+                    "% = " +
+                    GetStringFromDouble(tradeItem.CurrentCargo) +
+                    ")"
+                );
+            }
+
+
+            foreach (var lcd in textPanels)
+            {
+                var myLcd = (lcd.FatBlock as IMyTextPanel);
+                // myLcd.CustomData //Hier könnten zusätzliche Infos konfiguriert werden
+                if (myLcd == null) continue;
+                var title = myLcd.GetPublicTitle().ToLower();
+                if (!title.Contains("teinfo")) continue;
+                var lcdTextInfo = "";
+                if (title.Contains("buy"))
                 {
-                    sellstringbuild.AppendLine(tradeitem.ToString() + ": " 
-                         + (tradeitem.PriceModel.GerSellPrice(tradeitem.CargoRatio)).ToString("0.00##") + "$ ("
-                         + (tradeitem.CargoRatio * 100).ToString("0.#") + "% = " 
-                         + GetStringFromDouble(tradeitem.CurrentCargo) + ")" //+ tradeitem.MaxCargo.ToString("0.####") +                          
-                         + (tradeitem.PriceModel.IsProducent ? " [P]" : "")); //P                                
+                    lcdTextInfo = buyBuilder.ToString();
                 }
-                
-                var goodsbuing = Station.Goods.Where(g => g.IsBuy); 
-                foreach (var tradeitem in goodsbuing)
+                else if (title.Contains("sell"))
                 {
-                    buystringbuild.AppendLine(tradeitem.ToString() + ": " 
-                        + (tradeitem.PriceModel.GetBuyPrice(tradeitem.CargoRatio)).ToString("0.00##") + "$ ("
-                        + (tradeitem.CargoRatio * 100).ToString("0.#") + "% = "
-                        + GetStringFromDouble(tradeitem.CurrentCargo) + ")"); //tradeitem.MaxCargo.ToString("0.####") + ")"
+                    lcdTextInfo = sellBuilder.ToString();
                 }
-                
-
-                foreach (var lcd in txtpanels)
+                else //Allgemeine Infos der station anzeigen lassen
                 {
-                    var myLcd = (lcd.FatBlock as IMyTextPanel);
-                    string lcdtextinfo = "";
-                    // myLcd.CustomData //Hier könnten zusätzliche Infos konfiguriert werden
-                    var title = myLcd.GetPublicTitle().ToLower();
-                    if (title.Contains("teinfo"))
-                    {
-                        if (title.Contains("buy"))
-                        {
-                            lcdtextinfo = buystringbuild.ToString();
-                        }
-                        else if (title.Contains("sell"))
-                        {
-                            lcdtextinfo = sellstringbuild.ToString();
-                        }
-                        else //Allgemeine Infos der station anzeigen lassen
-                        {
-                            var builder = new StringBuilder();
-                            builder.AppendLine("StationName:" + Base.CustomName);
-                            builder.AppendLine("StationType:" + Station.Type);
-                            lcdtextinfo = builder.ToString();                            
-                        }
+                    var builder = new StringBuilder();
+                    builder.AppendLine("StationName:" + Base.CustomName);
+                    builder.AppendLine("StationType:" + Station.Type);
+                    lcdTextInfo = builder.ToString();
+                }
 
-                        if (lcdtextinfo != myLcd.GetPublicText())
-                        {                            
-                            myLcd.WritePublicText(lcdtextinfo);
-                        }
-                    }
+                if (lcdTextInfo != myLcd.GetPublicText())
+                {
+                    myLcd.WritePublicText(lcdTextInfo);
                 }
             }
         }
-        public static string GetStringFromDouble(double value)
+
+        private static string GetStringFromDouble(double value)
         {
             string rtn = "";
 
             if (value >= 1E9)
                 rtn = (value / 1E9).ToString("0") + "G";
-            if (value >= 1E6)
+            else if (value >= 1E6)
                 rtn = (value / 1E6).ToString("0") + "M";
             else if (value >= 1E4) //Erst ab 10 000  wird k angezeigt
                 rtn = (value / 1E3).ToString("0") + "k";

@@ -11,39 +11,39 @@ using Elitesuppe.Trade.Serialized.Items;
 namespace Elitesuppe.Trade.Serialized.Stations
 {
     [Serializable]
-    [System.Xml.Serialization.XmlRoot(Namespace = Definitions.VERSION)]
+    [System.Xml.Serialization.XmlRoot(Namespace = Definitions.Version)]
     public class TradeStation : StationBase
     {
-        public new static string StationType = "TradeStation";
+        public const string StationType = "TradeStation";
         public TradeStation() { }
 
-        public TradeStation(bool init, long ownerId, string type) : base(ownerId, type)
+        public TradeStation(bool init, long ownerId) : base(ownerId, StationType)
         {
             Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Gold", new PriceModel(2f, true, 0.6f, 1.4f), true, true, 1000, 0));
             Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Silver", new PriceModel(1f, true, 0.6f, 1.4f), true, true, 1000, 0));
         }
 
-        public override void HandleProdCycle(double fullprodtime)
+        public override void HandleProdCycle()
         {
-            double ProduceFrom = 0.25f;
-            double RecudeFrom = 0.75f;
+            const double produceFrom = 0.25f;
+            const double recedeFrom = 0.75f;
 
-            IEnumerable<TradeItem> proditems = Goods.Where(good => good.CargoRatio < ProduceFrom || good.CargoRatio > RecudeFrom);
+            IEnumerable<TradeItem> productionItems = Goods.Where(good => good.CargoRatio < produceFrom || good.CargoRatio > recedeFrom);
 
-            foreach (TradeItem tradeitem in proditems)
+            foreach (TradeItem tradeItem in productionItems)
             {
                 bool sell = false;
-                MyDefinitionId itemid = tradeitem.Definition;
+                MyDefinitionId itemId = tradeItem.Definition;
                 double itemCount = 0f;
 
-                if (tradeitem.CargoRatio > RecudeFrom)
+                if (tradeItem.CargoRatio > recedeFrom)
                 {
-                    itemCount = -1f * (tradeitem.CargoSize * 0.01f);
+                    itemCount = -1f * (tradeItem.CargoSize * 0.01f);
                 }
 
-                if (tradeitem.CargoRatio < ProduceFrom)
+                if (tradeItem.CargoRatio < produceFrom)
                 {
-                    itemCount = tradeitem.CargoSize * 0.01f;
+                    itemCount = tradeItem.CargoSize * 0.01f;
                 }
 
                 if (itemCount < 0)
@@ -52,9 +52,9 @@ namespace Elitesuppe.Trade.Serialized.Stations
                     sell = true;
                 }
 
-                if (itemCount > tradeitem.CargoSize) itemCount = tradeitem.CargoSize;
+                if (itemCount > tradeItem.CargoSize) itemCount = tradeItem.CargoSize;
 
-                if (!(ItemDefinitionFactory.Ores.Contains(itemid) || ItemDefinitionFactory.Ingots.Contains(itemid)))
+                if (!(ItemDefinitionFactory.Ores.Contains(itemId) || ItemDefinitionFactory.Ingots.Contains(itemId)))
                 {
                     itemCount = Math.Floor(itemCount);
                 }
@@ -63,16 +63,16 @@ namespace Elitesuppe.Trade.Serialized.Stations
                 {
                     if (sell)
                     {
-                        tradeitem.CurrentCargo -= itemCount;
-                        var actsellprice = tradeitem.PriceModel.GerSellPrice(tradeitem.CargoRatio);
+                        tradeItem.CurrentCargo -= itemCount;
+                        var sellPrice = tradeItem.PriceModel.GetSellPrice(tradeItem.CargoRatio);
                     }
                     else
                     {
-                        tradeitem.CurrentCargo += itemCount;
-                        var actbuyprice = tradeitem.PriceModel.GetBuyPrice(tradeitem.CargoRatio);
+                        tradeItem.CurrentCargo += itemCount;
+                        var buyPrice = tradeItem.PriceModel.GetBuyPrice(tradeItem.CargoRatio);
                     }
                 }
-                MyAPIGateway.Utilities.ShowMessage("HandleProdCycle", tradeitem.Definition.ToString() + "s: " + itemCount.ToString("0.#####") + "/" + tradeitem.CargoRatio.ToString("0.###") + "/" + tradeitem.CurrentCargo);
+                MyAPIGateway.Utilities.ShowMessage("HandleProdCycle", tradeItem.Definition + "s: " + itemCount.ToString("0.#####") + "/" + tradeItem.CargoRatio.ToString("0.###") + "/" + tradeItem.CurrentCargo);
             }
         }
 
