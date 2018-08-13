@@ -10,6 +10,7 @@ using TradeRedux.SerializedTradeStorage;
 using TradeRedux.InputOutput;
 using System.Text;
 using TradeRedux.PluginApi;
+using TradeRedux.SerializedTradeStorage.Stations;
 
 namespace TradeRedux
 {
@@ -101,7 +102,7 @@ namespace TradeRedux
                     if ((DateTime.Now - DisplayUpdateTime) > TimeSpan.FromMilliseconds(1000))
                     {
                         /*
-                        if (!string.IsNullOrWhiteSpace(myLcd.CustomName) && myLcd.CustomName.StartsWith("SETUP:")) // <---- eher für Reset geeignet!
+                        if (!string.IsNullOrWhiteSpace(myLcd.CustomName) && myLcd.CustomName.StartsWith("SETUP:")) // <---- eher fÃ¼r Reset geeignet!
                             Station.SetupStation(myLcd, true);//second param: color
 
                         if (!string.IsNullOrWhiteSpace(myLcd.GetPublicTitle()) && myLcd.GetPublicTitle().StartsWith("SETUP:"))
@@ -112,7 +113,7 @@ namespace TradeRedux
                         LCDOutput.FillSellBuyOnLcds(LcdPanel, Station, true);
                     }
                     
-                    //Production Update alle 1Mins ? Hier müssen wir wohl etwas experimentieren sobald alles drumherum funktioniert
+                    //Production Update alle 1Mins ? Hier mÃ¼ssen wir wohl etwas experimentieren sobald alles drumherum funktioniert
                     int produpdatetime = 10; //[s]
                     if ((DateTime.Now - ProdctionCycleLastUpdate) > TimeSpan.FromSeconds(produpdatetime))
                     {

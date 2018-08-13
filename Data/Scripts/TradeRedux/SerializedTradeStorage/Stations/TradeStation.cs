@@ -6,6 +6,7 @@ using TradeRedux.Inventory;
 using VRage.Game;
 using TradeRedux.TradeGoods;
 using Sandbox.ModAPI;
+using TradeRedux.SerializedTradeStorage.Stations;
 
 namespace TradeRedux.SerializedTradeStorage
 {

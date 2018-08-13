@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using TradeRedux.SerializedTradeStorage;
+using TradeRedux.SerializedTradeStorage.Stations;
 
 namespace TradeRedux.PluginApi
 {

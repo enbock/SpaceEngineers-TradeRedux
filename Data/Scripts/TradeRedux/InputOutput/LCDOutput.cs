@@ -13,6 +13,7 @@ using TradeRedux.Inventory;
 using TradeRedux.TradeGoods;
 using TradeRedux.SerializedTradeStorage;
 using Sandbox.ModAPI;
+using TradeRedux.SerializedTradeStorage.Stations;
 
 namespace TradeRedux.InputOutput
 {
