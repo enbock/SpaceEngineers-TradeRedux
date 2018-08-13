@@ -16,19 +16,20 @@ namespace Elitesuppe.Trade.Serialized.Stations
     {
         public const string StationType = "TradeStation";
         public TradeStation() { }
+        
+        public double ProduceFrom = 0.25f;
+        public double ReduceFrom = 0.75f;
 
-        public TradeStation(bool init, long ownerId) : base(ownerId, StationType)
+        public TradeStation(long ownerId) : base(ownerId, StationType)
         {
-            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Gold", new PriceModel(2f, true, 0.6f, 1.4f), true, true, 1000, 0));
-            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Silver", new PriceModel(1f, true, 0.6f, 1.4f), true, true, 1000, 0));
+            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Gold", new PriceModel(2f, true), true, true, 1000, 0));
+            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Silver", new PriceModel(1f, true), true, true, 1000, 0));
         }
 
         public override void HandleProdCycle()
         {
-            const double produceFrom = 0.25f;
-            const double recedeFrom = 0.75f;
 
-            IEnumerable<TradeItem> productionItems = Goods.Where(good => good.CargoRatio < produceFrom || good.CargoRatio > recedeFrom);
+            IEnumerable<TradeItem> productionItems = Goods.Where(good => good.CargoRatio < ProduceFrom || good.CargoRatio > ReduceFrom);
 
             foreach (TradeItem tradeItem in productionItems)
             {
@@ -36,12 +37,12 @@ namespace Elitesuppe.Trade.Serialized.Stations
                 MyDefinitionId itemId = tradeItem.Definition;
                 double itemCount = 0f;
 
-                if (tradeItem.CargoRatio > recedeFrom)
+                if (tradeItem.CargoRatio > ReduceFrom)
                 {
                     itemCount = -1f * (tradeItem.CargoSize * 0.01f);
                 }
 
-                if (tradeItem.CargoRatio < produceFrom)
+                if (tradeItem.CargoRatio < ProduceFrom)
                 {
                     itemCount = tradeItem.CargoSize * 0.01f;
                 }
@@ -78,6 +79,7 @@ namespace Elitesuppe.Trade.Serialized.Stations
 
         public override void TakeSettingData(StationBase oldStationData)
         {
+            base.TakeSettingData(oldStationData);
             foreach (TradeItem beforeItem in oldStationData.Goods)
             {
                 foreach (TradeItem nowItem in Goods)

@@ -37,7 +37,7 @@ namespace Elitesuppe.Trade.Serialized.Stations
             if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Station Block name was empty");
             string name = blockName.ToUpper();
 
-            if (TradeStation.StationType.ToUpper() == name) return new TradeStation(true, ownerId);
+            if (TradeStation.StationType.ToUpper() == name) return new TradeStation(ownerId);
 
             throw new ArgumentException("Station Block name did not match a station kind");
         }
@@ -133,7 +133,7 @@ namespace Elitesuppe.Trade.Serialized.Stations
 
                 // Logger.Log("Buy:" + itemCount + "  Payed Credits:" + paymentAmount + "   Taken item: " + removedItemsCount);
             }
-            catch (Exceptions.UnknownItemException)
+            catch (UnknownItemException)
             {
                 //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
             }
@@ -180,7 +180,7 @@ namespace Elitesuppe.Trade.Serialized.Stations
                     InventoryApi.AddToInventory(cargoBlock, itemDefinition, sellCount);
                     tradeItem.CurrentCargo -= sellCount;
                 }
-                catch (Exceptions.UnknownItemException)
+                catch (UnknownItemException)
                 {
                     //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
                 }

@@ -226,9 +226,8 @@ namespace Elitesuppe
 
         private void Log(string text)
         {
-            return;
-
-            string line = Logger.Log(text);
+            string line = text; //Logger.Log(text);
+            
             if (LcdPanel == null) return;
             
             List<string> output = new List<string>();
