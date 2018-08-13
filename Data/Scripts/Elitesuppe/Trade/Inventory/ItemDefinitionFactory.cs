@@ -21,12 +21,7 @@ namespace Elitesuppe.Trade.Inventory
 
             Type objectBuilder;
             string subType = input;
-            if (input.Equals(Definitions.Credits, StringComparison.InvariantCultureIgnoreCase))
-            {
-                objectBuilder = typeof(MyObjectBuilder_Component);
-                subType = Definitions.Credits;
-            }
-            else if (input.EndsWith("Ore", StringComparison.InvariantCultureIgnoreCase))
+            if (input.EndsWith("Ore", StringComparison.InvariantCultureIgnoreCase))
             {
                 objectBuilder = typeof(MyObjectBuilder_Ore);
                 subType = subType.Substring(0, subType.Length - 3);
