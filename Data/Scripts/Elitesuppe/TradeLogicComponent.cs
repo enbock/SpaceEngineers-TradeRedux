@@ -13,7 +13,7 @@ using VRage.ObjectBuilders;
 namespace Elitesuppe
 {
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TextPanel),false, new string[]{"ElitesuppeTradeRedux_LargeLCDPanelWide"})]
-    public class TradeStationLogic : MyGameLogicComponent
+    public class TradeLogicComponent : MyGameLogicComponent
     {
         private MyObjectBuilder_EntityBase _objectBuilder;
         private DateTime _displayUpdateTime = DateTime.MinValue;
