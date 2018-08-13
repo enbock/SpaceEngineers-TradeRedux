@@ -198,7 +198,8 @@ namespace Elitesuppe.Trade.Serialized.Stations
 
             foreach (var slim in blocks)
             {
-                if (!(slim.FatBlock is IMyShipConnector connector)) continue;
+                IMyShipConnector connector = slim.FatBlock as IMyShipConnector;
+                if (!(slim.FatBlock is IMyShipConnector)) continue;
                 if (connector.Status.Equals(Sandbox.ModAPI.Ingame.MyShipConnectorStatus.Connected))
                 {
                     connections.Add(connector, connector.OtherConnector.GetTopMostParent() as IMyCubeGrid);

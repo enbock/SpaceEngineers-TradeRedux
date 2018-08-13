@@ -50,8 +50,6 @@
       <DestroySound>WepSmallWarheadExpl</DestroySound>
       <PCU>5</PCU>
     </Definition>
-
-
   </CubeBlocks>
   <BlockPositions>
     <BlockPosition>

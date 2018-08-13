@@ -82,37 +82,34 @@ namespace Elitesuppe.Trade.Inventory
                 {
                     return ingot.DisplayNameText;
                 }
-                else return name + " Ingot ????";
+
+                return name + " Ingot ????";
             }
 
-            if (definition.TypeId == typeof(MyObjectBuilder_Component))
-            {
-                var blueprintDefinitionBase = MyDefinitionManager.Static.GetBlueprintDefinitions()
-                    .FirstOrDefault(bp => bp.Results.First().Id.Equals(definition));
-                return blueprintDefinitionBase != null ? blueprintDefinitionBase.DisplayNameText : name;
-            }
+            if (definition.TypeId != typeof(MyObjectBuilder_Component)) return name;
+            
+            var blueprintDefinitionBase = MyDefinitionManager.Static.GetBlueprintDefinitions()
+                .FirstOrDefault(bp => bp.Results.First().Id.Equals(definition));
+            return blueprintDefinitionBase != null ? blueprintDefinitionBase.DisplayNameText : name;
 
 
-            return name;
         }
 
-        private static List<VRage.Game.MyDefinitionId> _ores;
+        private static List<MyDefinitionId> _ores;
 
         public static List<MyDefinitionId> Ores
         {
             get
             {
-                if (_ores == null)
-                {
-                    _ores = new List<MyDefinitionId>();
-                    string[] oreTypes;
-                    MyDefinitionManager.Static.GetOreTypeNames(out oreTypes);
+                if (_ores != null) return _ores;
+                _ores = new List<MyDefinitionId>();
+                string[] oreTypes;
+                MyDefinitionManager.Static.GetOreTypeNames(out oreTypes);
 
-                    foreach (var oreType in oreTypes)
-                    {
-                        if (!oreType.Equals("Scrap") && !oreType.Equals("Organic"))
-                            _ores.Add(new MyDefinitionId(typeof(MyObjectBuilder_Ore), oreType));
-                    }
+                foreach (var oreType in oreTypes)
+                {
+                    if (!oreType.Equals("Scrap") && !oreType.Equals("Organic"))
+                        _ores.Add(new MyDefinitionId(typeof(MyObjectBuilder_Ore), oreType));
                 }
 
                 return _ores;
@@ -132,10 +129,12 @@ namespace Elitesuppe.Trade.Inventory
 
                 foreach (var ingotType in ingotTypes)
                 {
+                    MyBlueprintDefinitionBase ingot;
+                    
                     if (ingotType.Equals("Scrap") || ingotType.Equals("Organic")) continue;
                     if (!MyDefinitionManager.Static.TryGetIngotBlueprintDefinition(
                         new MyDefinitionId(typeof(MyObjectBuilder_Ingot), ingotType),
-                        out var ingot
+                        out ingot
                     )) continue;
 
                     foreach (var res in ingot.Results)
@@ -146,29 +145,27 @@ namespace Elitesuppe.Trade.Inventory
             }
         }
 
-        private static List<VRage.Game.MyDefinitionId> _components;
+        private static List<MyDefinitionId> _components;
 
-        public static List<VRage.Game.MyDefinitionId> Components
+        public static List<MyDefinitionId> Components
         {
             get
             {
-                if (_components == null)
+                if (_components != null) return _components;
+                _components = new List<MyDefinitionId>();
+                foreach (var bd in MyDefinitionManager.Static.GetBlueprintDefinitions())
                 {
-                    _components = new List<VRage.Game.MyDefinitionId>();
-                    foreach (var bd in MyDefinitionManager.Static.GetBlueprintDefinitions())
+                    if (bd.InputItemType != typeof(MyObjectBuilder_Ingot) ||
+                        bd.Results.Any(r => r.Id.TypeId != typeof(MyObjectBuilder_Component))
+                    ) continue;
+
+                    foreach (var result in bd.Results)
                     {
-                        if (bd.InputItemType != typeof(MyObjectBuilder_Ingot) ||
-                            bd.Results.Any(r => r.Id.TypeId != typeof(MyObjectBuilder_Component))
-                        ) continue;
-
-                        foreach (var result in bd.Results)
-                        {
-                            _components.Add(result.Id);
-                        }
+                        _components.Add(result.Id);
                     }
-
-                    _components = _components.Distinct().ToList();
                 }
+
+                _components = _components.Distinct().ToList();
 
                 return _components;
             }
@@ -199,14 +196,14 @@ namespace Elitesuppe.Trade.Inventory
             }
         }
 
-        private static List<VRage.Game.MyDefinitionId> _ammunitions;
+        private static List<MyDefinitionId> _ammunitions;
 
-        public static List<VRage.Game.MyDefinitionId> Ammunitions
+        public static List<MyDefinitionId> Ammunitions
         {
             get
             {
                 if (_ammunitions != null) return _ammunitions;
-                _ammunitions = new List<VRage.Game.MyDefinitionId>();
+                _ammunitions = new List<MyDefinitionId>();
                 foreach (var bd in MyDefinitionManager.Static.GetAllDefinitions()
                     .Where(def => def.Id.TypeId == typeof(MyObjectBuilder_AmmoMagazine)))
                 {

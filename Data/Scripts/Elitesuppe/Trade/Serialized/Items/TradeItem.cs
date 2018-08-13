@@ -8,8 +8,18 @@ namespace Elitesuppe.Trade.Serialized.Items
     [Serializable]
     public class TradeItem
     {
-        public TradeItem() { }
-        public TradeItem(MyDefinitionId itemType, PriceModel priceModel, bool sell, bool buy, int cargoSize = 1000, int currentCargo = 500)
+        public TradeItem()
+        {
+        }
+
+        public TradeItem(
+            MyDefinitionId itemType,
+            PriceModel priceModel,
+            bool sell,
+            bool buy,
+            int cargoSize = 1000,
+            int currentCargo = 500
+        )
         {
             Definition = itemType;
             PriceModel = priceModel;
@@ -18,7 +28,15 @@ namespace Elitesuppe.Trade.Serialized.Items
             IsSell = sell;
             IsBuy = buy;
         }
-        public TradeItem(string itemType, PriceModel priceModel, bool sell, bool buy, int cargoSize = 1000, int currentCargo = 500)
+
+        public TradeItem(
+            string itemType,
+            PriceModel priceModel,
+            bool sell,
+            bool buy,
+            int cargoSize = 1000,
+            int currentCargo = 500
+        )
         {
             try
             {
@@ -39,7 +57,7 @@ namespace Elitesuppe.Trade.Serialized.Items
 
         public string SerializedDefinition
         {
-            get => Definition.ToString();
+            get { return Definition.ToString(); }
 
             set
             {
