@@ -12,7 +12,7 @@ using VRage.ObjectBuilders;
 
 namespace Elitesuppe
 {
-    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TextPanel),false, new string[]{"ElitesuppeTradeRedux_LargeLCDPanelWide"})]
+    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TextPanel),false, "ElitesuppeTradeRedux_LargeLCDPanelWide")]
     public class TradeLogicComponent : MyGameLogicComponent
     {
         private MyObjectBuilder_EntityBase _objectBuilder;
