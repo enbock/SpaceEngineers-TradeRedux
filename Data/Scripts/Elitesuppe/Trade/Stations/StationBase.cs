@@ -18,7 +18,6 @@ namespace EliteSuppe.Trade.Stations
     public abstract class StationBase
     {
         public string Type { get; } = "StationBaseType";
-        public List<Item> Goods { get; } = new List<Item>();
         public long OwnerId { get; } = 0;
 
         protected StationBase()
@@ -35,8 +34,16 @@ namespace EliteSuppe.Trade.Stations
         {
             if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Station Block name was empty");
 
-            if (TradeStation.StationType == blockName) return new TradeStation(ownerId);
-            
+            switch (blockName)
+            {
+                case TradeStation.StationType:
+                    return new TradeStation(ownerId);
+                case IronForge.StationType:
+                    return new IronForge(ownerId);
+                case MiningStation.StationType:
+                    return new MiningStation(ownerId);
+            }
+
             throw new ArgumentException("Station Block name did not match a station kind");
         }
 
@@ -44,63 +51,15 @@ namespace EliteSuppe.Trade.Stations
         {
         }
 
-        private readonly Regex _cargoBlockRegex = new Regex(
-            @"\((\w+):?([\w\s\\\/]*)\)",
-            RegexOptions.Compiled & RegexOptions.IgnoreCase
-        );
-
-        public virtual void HandleCargo(List<IMySlimBlock> cargoBlockList)
+        public virtual void HandleCargo(IEnumerable<IMySlimBlock> cargoBlockList)
         {
-            foreach (IMySlimBlock block in cargoBlockList)
-            {
-                IMyCubeBlock cargoBlock = block.FatBlock;
-                if (cargoBlock == null) continue;
-
-                var cname = (cargoBlock as IMyTerminalBlock)?.CustomData;
-
-                if (cname == null)
-                {
-                    MyAPIGateway.Utilities.ShowMessage("StationWarning:", "CustomData = null");
-                    continue;
-                }
-
-                Match match = _cargoBlockRegex.Match(cname);
-
-                if (!match.Success) continue;
-
-                var action = match.Groups[1].Value;
-                var item = match.Groups[2].Value;
-                if (action.Equals("buy"))
-                {
-                    foreach (var tradeItem in Goods.Where(g => g.IsBuy))
-                    {
-                        HandleBuySequenceOnCargo(cargoBlock, tradeItem);
-                    }
-                }
-                else if (action.Equals("sell"))
-                {
-                    try
-                    {
-                        var itemDefinition = ItemDefinitionFactory.DefinitionFromString(item);
-                        foreach (Item tradeItem in Goods.Where(g => g.IsSell))
-                        {
-                            if (tradeItem.Definition != itemDefinition) continue;
-                            HandleSellSequenceOnCargo(cargoBlock, tradeItem);
-                        }
-                    }
-                    catch (UnknownItemException exception)
-                    {
-                        MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
-                    }
-                }
-            }
         }
 
         public virtual void TakeSettingData(StationBase oldStationData)
         {
         }
 
-        public void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
+        public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
             var itemCount = InventoryApi.CountItemsInventory(cargoBlock, item.Definition);
             var maximumItemsPerTransfer = item.CargoSize * 0.01; //10% of max
@@ -137,7 +96,7 @@ namespace EliteSuppe.Trade.Stations
             }
         }
 
-        public void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
+        public virtual void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
             Price pricing = item.Price;
             MyDefinitionId itemDefinition = item.Definition;
@@ -213,6 +172,8 @@ namespace EliteSuppe.Trade.Stations
             return connections;
         }
 
+
+        /*
         public void SetupStation(IMyTextPanel tradeBlock, bool color = false)
         {
             MyAPIGateway.Utilities.ShowMessage("TE", "Setting up Station ...");
@@ -258,7 +219,6 @@ namespace EliteSuppe.Trade.Stations
 
             MyAPIGateway.Utilities.ShowMessage("TE", "Setup finished!");
         }
-
         public virtual void SetupConnectedCargo(List<IMyTerminalBlock> cargos, bool color = false)
         {
             List<Item> goodsBought = Goods.Where(g => g.IsBuy).ToList();
@@ -322,5 +282,6 @@ namespace EliteSuppe.Trade.Stations
                 cargos[i].CustomName = (cargos[i] as IMyCargoContainer)?.DefinitionDisplayNameText;
             }
         }
+        */
     }
 }

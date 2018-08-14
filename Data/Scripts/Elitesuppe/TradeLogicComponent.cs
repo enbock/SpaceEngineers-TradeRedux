@@ -12,7 +12,16 @@ using VRage.ObjectBuilders;
 
 namespace Elitesuppe
 {
-    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TextPanel), false, "Elitesuppe_TradeRedux_TradeStation")]
+    [MyEntityComponentDescriptor(
+        typeof(MyObjectBuilder_TextPanel), 
+        false,
+        new string[]
+        {
+            "Elitesuppe_TradeRedux_TradeStation", 
+            "Elitesuppe_TradeRedux_MiningStation",
+            "Elitesuppe_TradeRedux_IronForge"
+        }
+    )]
     public class TradeLogicComponent : MyGameLogicComponent
     {
         private MyObjectBuilder_EntityBase _objectBuilder;
@@ -192,13 +201,13 @@ namespace Elitesuppe
 
             try
             {
-                string blockName = LcdPanel.BlockDefinition.SubtypeId;
-                Log("DEF? "+blockName);
-                return StationBase.Factory(blockName, LcdPanel.OwnerId);
+                StationBase station = StationBase.Factory(LcdPanel.BlockDefinition.SubtypeId, LcdPanel.OwnerId);
+                Log("Found:" + station.Type);
+                return station;
             }
             catch (ArgumentException)
             {
-                //Log("StationTypeError: Name the Block is not expected: " + LcdPanel.CustomName + " / " + LcdPanel.CustomNameWithFaction);
+                Log("StationTypeError: Name the Block is not expected: " + LcdPanel.BlockDefinition.SubtypeId);
                 // just wait for correct name
             }
 

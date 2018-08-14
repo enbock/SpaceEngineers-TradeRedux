@@ -59,34 +59,39 @@ namespace Elitesuppe.Trade
             sellBuilder.AppendLine("StationType:" + Station.Type);
             sellBuilder.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
             sellBuilder.AppendLine("Selling: (actual cargo)");
-            var goodsSelling = Station.Goods.Where(g => g.IsSell);
-            foreach (var tradeItem in goodsSelling)
-            {
-                sellBuilder.AppendLine(
-                    tradeItem +
-                    ": " +
-                    (tradeItem.Price.GetSellPrice(tradeItem.CargoRatio)).ToString("0.00##") +
-                    "$ (" +
-                    (tradeItem.CargoRatio * 100).ToString("0.#") +
-                    "% = " +
-                    GetStringFromDouble(tradeItem.CurrentCargo) +
-                    ")"
-                );
-            }
 
-            var goodsBuying = Station.Goods.Where(g => g.IsBuy);
-            foreach (var tradeItem in goodsBuying)
+            if (Station is TradeStation)
             {
-                buyBuilder.AppendLine(
-                    tradeItem +
-                    ": " +
-                    (tradeItem.Price.GetBuyPrice(tradeItem.CargoRatio)).ToString("0.00##") +
-                    "$ (" +
-                    (tradeItem.CargoRatio * 100).ToString("0.#") +
-                    "% = " +
-                    GetStringFromDouble(tradeItem.CurrentCargo) +
-                    ")"
-                );
+                TradeStation tradeStation = (TradeStation) Station;
+                var goodsSelling = tradeStation.Goods.Where(g => g.IsSell);
+                foreach (var tradeItem in goodsSelling)
+                {
+                    sellBuilder.AppendLine(
+                        tradeItem +
+                        ": " +
+                        (tradeItem.Price.GetSellPrice(tradeItem.CargoRatio)).ToString("0.00##") +
+                        "$ (" +
+                        (tradeItem.CargoRatio * 100).ToString("0.#") +
+                        "% = " +
+                        GetStringFromDouble(tradeItem.CurrentCargo) +
+                        ")"
+                    );
+                }
+
+                var goodsBuying = tradeStation.Goods.Where(g => g.IsBuy);
+                foreach (var tradeItem in goodsBuying)
+                {
+                    buyBuilder.AppendLine(
+                        tradeItem +
+                        ": " +
+                        (tradeItem.Price.GetBuyPrice(tradeItem.CargoRatio)).ToString("0.00##") +
+                        "$ (" +
+                        (tradeItem.CargoRatio * 100).ToString("0.#") +
+                        "% = " +
+                        GetStringFromDouble(tradeItem.CurrentCargo) +
+                        ")"
+                    );
+                }
             }
 
 

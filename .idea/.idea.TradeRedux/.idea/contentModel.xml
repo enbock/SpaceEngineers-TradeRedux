@@ -28,6 +28,7 @@
           <e p="NetWorkTransmitter.cs" t="Include" />
           <e p="StationManager.cs" t="Include" />
           <e p="Stations" t="Include">
+            <e p="FactoryStation.cs" t="Include" />
             <e p="IronForge.cs" t="Include" />
             <e p="MiningStation.cs" t="Include" />
             <e p="README.md" t="Include" />

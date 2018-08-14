@@ -17,8 +17,8 @@ namespace EliteSuppe.Trade.Items
             Price price,
             bool sell,
             bool buy,
-            int cargoSize = 1000,
-            int currentCargo = 500
+            double cargoSize = 1000,
+            double currentCargo = 500
         )
         {
             _definition = itemType;
@@ -34,8 +34,8 @@ namespace EliteSuppe.Trade.Items
             Price price,
             bool sell,
             bool buy,
-            int cargoSize = 1000,
-            int currentCargo = 500
+            double cargoSize = 1000,
+            double currentCargo = 500
         )
         {
             try
@@ -58,8 +58,8 @@ namespace EliteSuppe.Trade.Items
             Price price,
             double required = 0f,
             double result = 0f,
-            int cargoSize = 1000,
-            int currentCargo = 500
+            double cargoSize = 1000,
+            double currentCargo = 500
         )
         {
             _definition = ItemDefinitionFactory.DefinitionFromString(itemType);
