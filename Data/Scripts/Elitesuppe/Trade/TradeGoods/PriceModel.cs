@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace Elitesuppe.Trade.TradeGoods
 {
     public class PriceModel
@@ -17,7 +19,7 @@ namespace Elitesuppe.Trade.TradeGoods
 
         public double Price { get; set; } = 0;
 
-        public double MinPercent { get; set; } = 0.75f;
+        public double MinPercent { get; set; } = 0.10f;
 
         public double MaxPercent { get; set; } = 1.25f;
 
