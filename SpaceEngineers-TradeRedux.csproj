@@ -123,6 +123,7 @@
     <Compile Include="Data\Scripts\Elitesuppe\Trade\LCDOutput.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\NetWorkTransmitter.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Serialized\Items\TradeItem.cs" />
+    <Compile Include="Data\Scripts\Elitesuppe\Trade\Serialized\Stations\IronForge.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Serialized\Stations\StationBase.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Serialized\Stations\MiningStation.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Serialized\Stations\TradeStation.cs" />
