@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Elitesuppe.Trade;
-using Elitesuppe.Trade.Serialized.Stations;
+using EliteSuppe.Trade.Stations;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.ModAPI;
 using VRage.Game;

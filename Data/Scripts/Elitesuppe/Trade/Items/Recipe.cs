@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Elitesuppe.Trade.Serialized.Items
+namespace EliteSuppe.Trade.Items
 {
     [Serializable]
     public class Recipe

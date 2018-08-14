@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
-using Elitesuppe.Trade.Serialized.Items;
-using Elitesuppe.Trade.TradeGoods;
+using Elitesuppe.Trade;
+using EliteSuppe.Trade.Items;
 using Sandbox.ModAPI;
 
-namespace Elitesuppe.Trade.Serialized.Stations
+namespace EliteSuppe.Trade.Stations
 {
     [Serializable]
     [XmlRoot(Namespace = Definitions.Version)]

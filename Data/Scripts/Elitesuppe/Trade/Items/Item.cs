@@ -1,9 +1,9 @@
 ﻿using System;
+using Elitesuppe.Trade.Exceptions;
+using Elitesuppe.Trade.Inventory;
 using VRage.Game;
-using Sandbox.ModAPI;
-using Elitesuppe.Trade.TradeGoods;
 
-namespace Elitesuppe.Trade.Serialized.Items
+namespace EliteSuppe.Trade.Items
 {
     [Serializable]
     public class Item
@@ -40,14 +40,14 @@ namespace Elitesuppe.Trade.Serialized.Items
         {
             try
             {
-                _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
+                _definition = ItemDefinitionFactory.DefinitionFromString(itemType);
                 Price = price;
                 CargoSize = cargoSize;
                 CurrentCargo = currentCargo;
                 IsSell = sell;
                 IsBuy = buy;
             }
-            catch (Exceptions.UnknownItemException)
+            catch (UnknownItemException)
             {
                 //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
             }
@@ -62,7 +62,7 @@ namespace Elitesuppe.Trade.Serialized.Items
             int currentCargo = 500
         )
         {
-            _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
+            _definition = ItemDefinitionFactory.DefinitionFromString(itemType);
             Price = price;
             CargoSize = cargoSize;
             CurrentCargo = currentCargo;
@@ -87,9 +87,9 @@ namespace Elitesuppe.Trade.Serialized.Items
             {
                 try
                 {
-                    _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(value);
+                    _definition = ItemDefinitionFactory.DefinitionFromString(value);
                 }
-                catch (Exceptions.UnknownItemException)
+                catch (UnknownItemException)
                 {
                     //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
                 }
@@ -117,7 +117,7 @@ namespace Elitesuppe.Trade.Serialized.Items
 
         public override string ToString()
         {
-            return Inventory.ItemDefinitionFactory.DefinitionToString(Definition);
+            return ItemDefinitionFactory.DefinitionToString(Definition);
         }
     }
 }

@@ -1,14 +1,16 @@
 ﻿
+using Sandbox.ModAPI;
+
 namespace Elitesuppe.Trade
 {
     public static class TradeEngineersHelp
     {
         public static void ShowHelp(string screen, string title=null)
         {
-            Sandbox.ModAPI.MyAPIGateway.Utilities.ShowMissionScreen("Trade Engineers help",
+            MyAPIGateway.Utilities.ShowMissionScreen("Trade Engineers help",
                 null,
                 title,
-                TradeEngineersHelp.HELPGENERAL);
+                HELPGENERAL);
         }
 
         public static string HELPGENERAL = 

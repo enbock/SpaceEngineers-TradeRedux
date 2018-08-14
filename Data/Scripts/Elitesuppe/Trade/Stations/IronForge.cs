@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VRage.Game;
+using System.Xml.Serialization;
+using Elitesuppe.Trade;
+using EliteSuppe.Trade.Items;
 using Sandbox.ModAPI;
 
-using Elitesuppe.Trade.Inventory;
-using Elitesuppe.Trade.TradeGoods;
-using Elitesuppe.Trade.Serialized.Items;
-
-namespace Elitesuppe.Trade.Serialized.Stations
+namespace EliteSuppe.Trade.Stations
 {
     [Serializable]
-    [System.Xml.Serialization.XmlRoot(Namespace = Definitions.Version)]
+    [XmlRoot(Namespace = Definitions.Version)]
     public class IronForge : StationBase
     {
-        public double credits = 0;
+        public double Credits = 0;
         public double ProduceFrom = 1;
         public double ReduceFrom = 1;
         public const string StationType = "IronForge";

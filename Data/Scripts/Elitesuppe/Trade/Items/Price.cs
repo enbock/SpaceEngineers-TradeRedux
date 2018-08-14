@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Elitesuppe.Trade.TradeGoods
+﻿namespace EliteSuppe.Trade.Items
 {
     public class Price
     {

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VRage.Game;
-using Sandbox.ModAPI;
-
+using Elitesuppe.Trade;
 using Elitesuppe.Trade.Inventory;
-using Elitesuppe.Trade.TradeGoods;
-using Elitesuppe.Trade.Serialized.Items;
+using EliteSuppe.Trade.Items;
+using Sandbox.ModAPI;
+using VRage.Game;
 
-namespace Elitesuppe.Trade.Serialized.Stations
+namespace EliteSuppe.Trade.Stations
 {
     [Serializable]
     [System.Xml.Serialization.XmlRoot(Namespace = Definitions.Version)]

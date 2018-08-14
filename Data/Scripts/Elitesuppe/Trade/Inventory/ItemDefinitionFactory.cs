@@ -1,9 +1,9 @@
-﻿using Sandbox.Definitions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using VRage.Game;
 using Elitesuppe.Trade.Exceptions;
+using Sandbox.Definitions;
+using VRage.Game;
 
 namespace Elitesuppe.Trade.Inventory
 {

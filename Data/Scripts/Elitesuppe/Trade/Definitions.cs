@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Elitesuppe.Trade
+﻿namespace Elitesuppe.Trade
 {
     public static class Definitions
     {

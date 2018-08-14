@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using VRage.ModAPI;
-using VRage.Game.ModAPI;
+using EliteSuppe.Trade.Stations;
+using Sandbox.Common.ObjectBuilders;
 using Sandbox.ModAPI;
-using Elitesuppe.Trade.Serialized.Stations;
+using VRage.Game.ModAPI;
+using VRage.ModAPI;
 
 namespace Elitesuppe.Trade
 {
@@ -22,7 +23,7 @@ namespace Elitesuppe.Trade
                 textPanels,
                 e => e?.FatBlock != null &&
                      e.FatBlock.BlockDefinition.TypeId ==
-                     typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel)
+                     typeof(MyObjectBuilder_TextPanel)
             );
 
             if (connectedgrids)
@@ -39,7 +40,7 @@ namespace Elitesuppe.Trade
                         panels,
                         e => e?.FatBlock != null &&
                              e.FatBlock.BlockDefinition.TypeId ==
-                             typeof(Sandbox.Common.ObjectBuilders.MyObjectBuilder_TextPanel)
+                             typeof(MyObjectBuilder_TextPanel)
                     );
                     textPanels.AddRange(panels);
                 }

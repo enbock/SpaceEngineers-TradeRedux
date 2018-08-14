@@ -2,17 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Elitesuppe.Trade;
+using Elitesuppe.Trade.Exceptions;
+using Elitesuppe.Trade.Inventory;
+using EliteSuppe.Trade.Items;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
-using Sandbox.ModAPI;
-using Elitesuppe.Trade.Serialized.Items;
-using Elitesuppe.Trade.Inventory;
-using Elitesuppe.Trade.TradeGoods;
-using Elitesuppe.Trade.Exceptions;
 
-
-namespace Elitesuppe.Trade.Serialized.Stations
+namespace EliteSuppe.Trade.Stations
 {
     [Serializable]
     [System.Xml.Serialization.XmlRoot(Namespace = Definitions.Version)]
