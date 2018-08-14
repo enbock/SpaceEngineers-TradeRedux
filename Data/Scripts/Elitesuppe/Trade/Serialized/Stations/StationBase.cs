@@ -39,6 +39,7 @@ namespace Elitesuppe.Trade.Serialized.Stations
 
             if (TradeStation.StationType.ToUpper() == name) return new TradeStation(ownerId);
             else if (MiningStation.StationType.ToUpper() == name) return new MiningStation(ownerId);
+            else if (IronForge.StationType.ToUpper() == name) return new IronForge(ownerId);
 
             throw new ArgumentException("Station Block name did not match a station kind");
         }

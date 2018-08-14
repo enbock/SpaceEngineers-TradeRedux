@@ -115,7 +115,6 @@
   <ItemGroup>
     <Compile Include="Data\Scripts\Elitesuppe\ChatInput.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\TradeLogicComponent.cs" />
-    <Compile Include="Data\Scripts\Elitesuppe\TradeStationLogic.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Definitions.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Exceptions\TradeEngineersException.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Exceptions\UnknownItemException.cs" />
@@ -125,6 +124,7 @@
     <Compile Include="Data\Scripts\Elitesuppe\Trade\NetWorkTransmitter.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Serialized\Items\TradeItem.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Serialized\Stations\StationBase.cs" />
+    <Compile Include="Data\Scripts\Elitesuppe\Trade\Serialized\Stations\MiningStation.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\Serialized\Stations\TradeStation.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\StationManager.cs" />
     <Compile Include="Data\Scripts\Elitesuppe\Trade\TradeEngineersHelp.cs" />
