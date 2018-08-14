@@ -22,12 +22,12 @@ namespace Elitesuppe.Trade
         public static IEnumerable<StationWithTradeBlock> GetStations()
         {
             CleanUpStationList();
-            return _stationList.Where(lcd => lcd?.Station != null).Select(lcd => new StationWithTradeBlock { Station = lcd.Station, TradeBlock = lcd.LcdPanel, LCD = lcd });
+            return _stationList.Where(lcd => lcd != null && lcd.Station != null).Select(lcd => new StationWithTradeBlock { Station = lcd.Station, TradeBlock = lcd.LcdPanel, Lcd = lcd });
         }
 
         private static void CleanUpStationList()
         {
-            var cleanStations = _stationList.Where(lcd => lcd?.LcdPanel != null && !lcd.MarkedForClose && !lcd.Closed).ToList();
+            var cleanStations = _stationList.Where(lcd => lcd != null && lcd.LcdPanel != null && !lcd.MarkedForClose && !lcd.Closed).ToList();
             _stationList = cleanStations;
         }
     }
@@ -35,7 +35,7 @@ namespace Elitesuppe.Trade
     public class StationWithTradeBlock
     {
         public StationBase Station { get; set; }
-        public Sandbox.ModAPI.IMyTextPanel TradeBlock { get; set; }
-        public TradeLogicComponent LCD { get; set; }
+        public IMyTextPanel TradeBlock { get; set; }
+        public TradeLogicComponent Lcd { get; set; }
     }
 }

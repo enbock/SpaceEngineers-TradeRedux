@@ -22,11 +22,11 @@ namespace Elitesuppe.Trade.Serialized.Stations
         public List<TradeItem> Goods { get; } = new List<TradeItem>();
         public long OwnerId { get; } = 0;
 
-        public StationBase()
+        protected StationBase()
         {
         }
 
-        public StationBase(long ownerId, string type)
+        protected StationBase(long ownerId, string type)
         {
             OwnerId = ownerId;
             Type = type;
@@ -38,8 +38,6 @@ namespace Elitesuppe.Trade.Serialized.Stations
             string name = blockName.ToUpper();
 
             if (TradeStation.StationType.ToUpper() == name) return new TradeStation(ownerId);
-            else if (MiningStation.StationType.ToUpper() == name) return new MiningStation(ownerId);
-            else if (IronForge.StationType.ToUpper() == name) return new IronForge(ownerId);
 
             throw new ArgumentException("Station Block name did not match a station kind");
         }

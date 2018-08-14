@@ -98,7 +98,7 @@ namespace Elitesuppe
                         */
                     _displayUpdateTime = DateTime.Now;
 
-                    LCDOutput.FillSellBuyOnLcds(LcdPanel, Station, true);
+                    LcdOutput.FillSellBuyOnLcds(LcdPanel, Station, true);
                 }
 
                 //Production Update alle 1Mins

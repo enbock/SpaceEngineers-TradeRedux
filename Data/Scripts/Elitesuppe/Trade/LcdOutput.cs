@@ -9,7 +9,7 @@ using Elitesuppe.Trade.Serialized.Stations;
 
 namespace Elitesuppe.Trade
 {
-    static class LCDOutput
+    static class LcdOutput
     {
         public static void FillSellBuyOnLcds(IMyEntity entity, StationBase Station, bool connectedgrids = false)
         {
