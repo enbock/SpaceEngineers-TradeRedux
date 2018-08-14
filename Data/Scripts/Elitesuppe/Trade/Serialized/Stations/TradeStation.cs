@@ -22,15 +22,15 @@ namespace Elitesuppe.Trade.Serialized.Stations
 
         public TradeStation(long ownerId) : base(ownerId, StationType)
         {
-            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Gold", new PriceModel(2f, true), true, true, 1000, 0));
-            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Silver", new PriceModel(1f, true), true, true, 1000, 0));
+            Goods.Add(new Item("MyObjectBuilder_Ingot/Gold", new Price(2f), true, true, 1000, 0));
+            Goods.Add(new Item("MyObjectBuilder_Ingot/Silver", new Price(1f), true, true, 1000, 0));
         }
 
         public override void HandleProdCycle()
         {
-            IEnumerable<TradeItem> productionItems = Goods.Where(good => good.CargoRatio < ProduceFrom || good.CargoRatio > ReduceFrom);
+            IEnumerable<Item> productionItems = Goods.Where(good => good.CargoRatio < ProduceFrom || good.CargoRatio > ReduceFrom);
 
-            foreach (TradeItem tradeItem in productionItems)
+            foreach (Item tradeItem in productionItems)
             {
                 bool sell = false;
                 MyDefinitionId itemId = tradeItem.Definition;
@@ -64,12 +64,12 @@ namespace Elitesuppe.Trade.Serialized.Stations
                     if (sell)
                     {
                         tradeItem.CurrentCargo -= itemCount;
-                        var sellPrice = tradeItem.PriceModel.GetSellPrice(tradeItem.CargoRatio);
+                        var sellPrice = tradeItem.Price.GetSellPrice(tradeItem.CargoRatio);
                     }
                     else
                     {
                         tradeItem.CurrentCargo += itemCount;
-                        var buyPrice = tradeItem.PriceModel.GetBuyPrice(tradeItem.CargoRatio);
+                        var buyPrice = tradeItem.Price.GetBuyPrice(tradeItem.CargoRatio);
                     }
                 }
                 MyAPIGateway.Utilities.ShowMessage("HandleProdCycle", tradeItem.Definition + "s: " + itemCount.ToString("0.#####") + "/" + tradeItem.CargoRatio.ToString("0.###") + "/" + tradeItem.CurrentCargo);
@@ -79,15 +79,15 @@ namespace Elitesuppe.Trade.Serialized.Stations
         public override void TakeSettingData(StationBase oldStationData)
         {
             base.TakeSettingData(oldStationData);
-            foreach (TradeItem beforeItem in oldStationData.Goods)
+            foreach (Item beforeItem in oldStationData.Goods)
             {
-                foreach (TradeItem nowItem in Goods)
+                foreach (Item nowItem in Goods)
                 {
                     if (nowItem.SerializedDefinition != beforeItem.SerializedDefinition) continue;
 
-                    nowItem.PriceModel.Price = beforeItem.PriceModel.Price;
-                    nowItem.PriceModel.MinPercent = beforeItem.PriceModel.MinPercent;
-                    nowItem.PriceModel.MaxPercent = beforeItem.PriceModel.MaxPercent;
+                    nowItem.Price.Amount = beforeItem.Price.Amount;
+                    nowItem.Price.MinPercent = beforeItem.Price.MinPercent;
+                    nowItem.Price.MaxPercent = beforeItem.Price.MaxPercent;
                     nowItem.CargoSize = beforeItem.CargoSize;
 
                     break; // first out

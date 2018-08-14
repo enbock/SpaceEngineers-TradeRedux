@@ -1,23 +1,21 @@
-﻿
-using System;
+﻿using System;
 
 namespace Elitesuppe.Trade.TradeGoods
 {
-    public class PriceModel
+    public class Price
     {
-        public PriceModel() { }
-
-        public PriceModel(double price, bool willProduce = false, double minPercent = 0.6f, double maxPercent = 1.4f)
+        public Price()
         {
-            Price = price;
-            MinPercent = minPercent;
-            MaxPercent = maxPercent;
-            IsProducent = willProduce;
         }
 
-        public bool IsProducent { get; set; } = false;
+        public Price(double amount, double minPercent = 0.6f, double maxPercent = 1.4f)
+        {
+            Amount = amount;
+            MinPercent = minPercent;
+            MaxPercent = maxPercent;
+        }
 
-        public double Price { get; set; } = 0;
+        public double Amount { get; set; } = 0;
 
         public double MinPercent { get; set; } = 0.10f;
 
@@ -26,21 +24,20 @@ namespace Elitesuppe.Trade.TradeGoods
         public double GetBuyPrice(double cargoVolumePercent = 0.5)
         {
             cargoVolumePercent = cargoVolumePercent > 1 ? 1 : cargoVolumePercent;
-            var preis = Price * (1 - (1 - MinPercent) * cargoVolumePercent);
-            if (!IsProducent) preis += Price;
+            var preis = Amount * (1 - (1 - MinPercent) * cargoVolumePercent);
             return preis;
         }
 
         public double GetSellPrice(double cargoVolumePercent = 0.5)
         {
             cargoVolumePercent = cargoVolumePercent > 1 ? 1 : cargoVolumePercent;
-            var preis = Price * (1 + (MaxPercent - 1) * (1 - cargoVolumePercent));
+            var preis = Amount * (1 + (MaxPercent - 1) * (1 - cargoVolumePercent));
             return preis;
         }
 
         public override string ToString()
         {
-            return Price + ";" + MinPercent + ";" + MaxPercent;
+            return Amount + ";" + MinPercent + ";" + MaxPercent;
         }
     }
 }

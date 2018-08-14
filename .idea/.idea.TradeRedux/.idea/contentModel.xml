@@ -23,9 +23,13 @@
           <e p="NetWorkTransmitter.cs" t="Include" />
           <e p="Serialized" t="Include">
             <e p="Items" t="Include">
-              <e p="TradeItem.cs" t="Include" />
+              <e p="Item.cs" t="Include" />
+              <e p="Price.cs" t="Include" />
+              <e p="Recipe.cs" t="Include" />
             </e>
             <e p="Stations" t="Include">
+              <e p="IronForge.cs" t="Include" />
+              <e p="MiningStation.cs" t="Include" />
               <e p="README.md" t="Include" />
               <e p="StationBase.cs" t="Include" />
               <e p="TradeStation.cs" t="Include" />
@@ -33,9 +37,6 @@
           </e>
           <e p="StationManager.cs" t="Include" />
           <e p="TradeEngineersHelp.cs" t="Include" />
-          <e p="TradeGoods" t="Include">
-            <e p="PriceModel.cs" t="Include" />
-          </e>
         </e>
         <e p="TradeLogicComponent.cs" t="Include" />
       </e>

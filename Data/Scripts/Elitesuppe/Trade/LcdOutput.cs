@@ -64,13 +64,12 @@ namespace Elitesuppe.Trade
                 sellBuilder.AppendLine(
                     tradeItem +
                     ": " +
-                    (tradeItem.PriceModel.GetSellPrice(tradeItem.CargoRatio)).ToString("0.00##") +
+                    (tradeItem.Price.GetSellPrice(tradeItem.CargoRatio)).ToString("0.00##") +
                     "$ (" +
                     (tradeItem.CargoRatio * 100).ToString("0.#") +
                     "% = " +
                     GetStringFromDouble(tradeItem.CurrentCargo) +
-                    ")" +
-                    (tradeItem.PriceModel.IsProducent ? " [P]" : "")
+                    ")"
                 );
             }
 
@@ -80,7 +79,7 @@ namespace Elitesuppe.Trade
                 buyBuilder.AppendLine(
                     tradeItem +
                     ": " +
-                    (tradeItem.PriceModel.GetBuyPrice(tradeItem.CargoRatio)).ToString("0.00##") +
+                    (tradeItem.Price.GetBuyPrice(tradeItem.CargoRatio)).ToString("0.00##") +
                     "$ (" +
                     (tradeItem.CargoRatio * 100).ToString("0.#") +
                     "% = " +

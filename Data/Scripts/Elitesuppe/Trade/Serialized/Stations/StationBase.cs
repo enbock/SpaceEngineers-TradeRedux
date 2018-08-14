@@ -19,7 +19,7 @@ namespace Elitesuppe.Trade.Serialized.Stations
     public abstract class StationBase
     {
         public string Type { get; } = "StationBaseType";
-        public List<TradeItem> Goods { get; } = new List<TradeItem>();
+        public List<Item> Goods { get; } = new List<Item>();
         public long OwnerId { get; } = 0;
 
         protected StationBase()
@@ -84,7 +84,7 @@ namespace Elitesuppe.Trade.Serialized.Stations
                     try
                     {
                         var itemDefinition = ItemDefinitionFactory.DefinitionFromString(item);
-                        foreach (TradeItem tradeItem in Goods.Where(g => g.IsSell))
+                        foreach (Item tradeItem in Goods.Where(g => g.IsSell))
                         {
                             if (tradeItem.Definition != itemDefinition) continue;
                             HandleSellSequenceOnCargo(cargoBlock, tradeItem);
@@ -102,26 +102,26 @@ namespace Elitesuppe.Trade.Serialized.Stations
         {
         }
 
-        public void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, TradeItem tradeItem)
+        public void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
-            var itemCount = InventoryApi.CountItemsInventory(cargoBlock, tradeItem.Definition);
-            var maximumItemsPerTransfer = tradeItem.CargoSize * 0.01; //10% of max
+            var itemCount = InventoryApi.CountItemsInventory(cargoBlock, item.Definition);
+            var maximumItemsPerTransfer = item.CargoSize * 0.01; //10% of max
             if (!(itemCount > 0)) return;
-            var pricing = tradeItem.PriceModel;
-            var buyPrice = pricing.GetBuyPrice(tradeItem.CargoRatio);
+            var pricing = item.Price;
+            var buyPrice = pricing.GetBuyPrice(item.CargoRatio);
 
             if (itemCount > maximumItemsPerTransfer) itemCount = maximumItemsPerTransfer;
 
-            if ((itemCount + tradeItem.CurrentCargo) > tradeItem.CargoSize)
+            if ((itemCount + item.CurrentCargo) > item.CargoSize)
             {
-                itemCount = (tradeItem.CargoSize - tradeItem.CurrentCargo);
+                itemCount = (item.CargoSize - item.CurrentCargo);
             }
 
             itemCount = Math.Floor(itemCount);
 
-            var removedItemsCount = InventoryApi.RemoveFromInventory(cargoBlock, tradeItem.Definition, itemCount);
+            var removedItemsCount = InventoryApi.RemoveFromInventory(cargoBlock, item.Definition, itemCount);
             if (removedItemsCount <= 0) return;
-            tradeItem.CurrentCargo += removedItemsCount;
+            item.CurrentCargo += removedItemsCount;
             try
             {
                 double paymentAmount = Math.Floor(buyPrice * removedItemsCount);
@@ -139,26 +139,26 @@ namespace Elitesuppe.Trade.Serialized.Stations
             }
         }
 
-        public void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, TradeItem tradeItem)
+        public void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
-            PriceModel pricing = tradeItem.PriceModel;
-            MyDefinitionId itemDefinition = tradeItem.Definition;
+            Price pricing = item.Price;
+            MyDefinitionId itemDefinition = item.Definition;
 
-            double maximumItemsPerTransfer = tradeItem.CargoSize * 0.01f; //10% of max
+            double maximumItemsPerTransfer = item.CargoSize * 0.01f; //10% of max
 
             double creditsInCargo = InventoryApi.CountItemsInventory(
                 cargoBlock,
                 ItemDefinitionFactory.DefinitionFromString(Definitions.Credits)
             );
             if (!(creditsInCargo > 0)) return;
-            double sellPrice = pricing.GetSellPrice(tradeItem.CargoRatio);
+            double sellPrice = pricing.GetSellPrice(item.CargoRatio);
             double sellCount = creditsInCargo / sellPrice;
 
             if (sellCount > maximumItemsPerTransfer) sellCount = maximumItemsPerTransfer;
 
-            if (sellCount > tradeItem.CurrentCargo)
+            if (sellCount > item.CurrentCargo)
             {
-                sellCount = tradeItem.CurrentCargo;
+                sellCount = item.CurrentCargo;
             }
 
             sellCount = Math.Floor(sellCount);
@@ -178,7 +178,7 @@ namespace Elitesuppe.Trade.Serialized.Stations
                     if (!(Math.Abs(removeCreditsFromCargo) > 0)) return;
                     // if (paymentAmount != removeCreditsFromCargo) Logger.Log("pay/remove " + ceditsInCargo.ToString("0.00##") + "/" + removeCreditsFromCargo.ToString("0.00##"));
                     InventoryApi.AddToInventory(cargoBlock, itemDefinition, sellCount);
-                    tradeItem.CurrentCargo -= sellCount;
+                    item.CurrentCargo -= sellCount;
                 }
                 catch (UnknownItemException)
                 {
@@ -263,8 +263,8 @@ namespace Elitesuppe.Trade.Serialized.Stations
 
         public virtual void SetupConnectedCargo(List<IMyTerminalBlock> cargos, bool color = false)
         {
-            List<TradeItem> goodsBought = Goods.Where(g => g.IsBuy).ToList();
-            List<TradeItem> goodsSold = Goods.Where(g => g.IsSell).ToList();
+            List<Item> goodsBought = Goods.Where(g => g.IsBuy).ToList();
+            List<Item> goodsSold = Goods.Where(g => g.IsSell).ToList();
             double amount = goodsBought.Count > 0 ? 1 : 0;
             amount += goodsSold.Count;
 

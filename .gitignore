@@ -25,6 +25,9 @@ Elitesuppe.*
 modinfo.sbmi
 Data/Scripts/Elitesuppe/*.csproj
 *sln*
+[Bb]in/
+[Oo]bj/
+[Ll]og/
 
 # Visual Studio 2015 cache/options directory
 .vs/

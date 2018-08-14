@@ -24,19 +24,19 @@ namespace Elitesuppe.Trade.Serialized.Stations
         public IronForge(long ownerId) : base(ownerId, StationType)
         {
 
-            // TradeItem(Name, (price,minPercent,maxPercent,willProduce), sell, buy, cargoSize, 0)
+            // Item(Name, (price,minPercent,maxPercent,willProduce), sell, buy, cargoSize, 0)
             // buy
 
             // Setze Uranium ingots und Eis als erz voraus um zu arbeiten...
-            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Uranium", new PriceModel(32f), false, true, 25000, 50));
-            Goods.Add(new TradeItem("MyObjectBuilder_Ore/Ice", new PriceModel(12f), false, true, 25000, 50));
-            Goods.Add(new TradeItem("MyObjectBuilder_Ingot/Iron", new PriceModel(12f), false, true, 25000, 50));
+            Goods.Add(new Item("MyObjectBuilder_Ingot/Uranium", new Price(32f), false, true, 25000, 50));
+            Goods.Add(new Item("MyObjectBuilder_Ore/Ice", new Price(12f), false, true, 25000, 50));
+            Goods.Add(new Item("MyObjectBuilder_Ingot/Iron", new Price(12f), false, true, 25000, 50));
 
             // sell
             // @todo: Für Beispiel erstmal alle später limitieren..
-            Goods.Add(new TradeItem("MyObjectBuilder_Component/SteelPlate", new PriceModel(100f, true), true, false, 100000, 0));
-            Goods.Add(new TradeItem("MyObjectBuilder_Component/Construction Component", new PriceModel(100f, true), true, false, 100000, 0));
-            Goods.Add(new TradeItem("MyObjectBuilder_Component/Interior Plate", new PriceModel(100f, true), true, false, 100000, 0));
+            Goods.Add(new Item("MyObjectBuilder_Component/SteelPlate", new Price(100f), true, false, 100000, 0));
+            Goods.Add(new Item("MyObjectBuilder_Component/Construction Component", new Price(100f), true, false, 100000, 0));
+            Goods.Add(new Item("MyObjectBuilder_Component/Interior Plate", new Price(100f), true, false, 100000, 0));
         }
 
         public override void HandleProdCycle()
@@ -46,18 +46,18 @@ namespace Elitesuppe.Trade.Serialized.Stations
             // hier fehlt noch eine überarbeitung den was ist wenn es im minus rutscht der güter ? aktuell wird es danach auf 0 gesetzt. Sowie die Industrie stellt die arbeit ein.
 
             // Listen als IEnumerable
-            IEnumerable<TradeItem> buyItems     = Goods.Where(good => good.IsBuy && good.CurrentCargo > 0) ;
-            IEnumerable<TradeItem> sellItems    = Goods.Where(good => good.IsSell && (good.CargoSize > good.CurrentCargo));
+            IEnumerable<Item> buyItems     = Goods.Where(good => good.IsBuy && good.CurrentCargo > 0) ;
+            IEnumerable<Item> sellItems    = Goods.Where(good => good.IsSell && (good.CargoSize > good.CurrentCargo));
             
             // Listen nochmal als "List" für Count ..
-            List<TradeItem> listBuy = Goods.FindAll(good => good.IsBuy && good.CurrentCargo > 0);
+            List<Item> listBuy = Goods.FindAll(good => good.IsBuy && good.CurrentCargo > 0);
             if(listBuy.Count != 2)
             {
                 MyAPIGateway.Utilities.ShowMessage(StationType,"disable work: input low");
                 return;
             }
 
-            List<TradeItem> listSell = Goods.FindAll(good => good.IsSell && (good.CargoSize > good.CurrentCargo));
+            List<Item> listSell = Goods.FindAll(good => good.IsSell && (good.CargoSize > good.CurrentCargo));
             if (listSell.Count == 0)
             {
                 MyAPIGateway.Utilities.ShowMessage(StationType, "disable work: output full");
@@ -69,7 +69,7 @@ namespace Elitesuppe.Trade.Serialized.Stations
 
             MyAPIGateway.Utilities.ShowMessage(StationType, "update prod");
             // prod from sellItems
-            foreach (TradeItem tradeItem in sellItems)
+            foreach (Item tradeItem in sellItems)
             {
                 if (tradeItem.CurrentCargo < tradeItem.CargoSize)
                 {
@@ -87,9 +87,9 @@ namespace Elitesuppe.Trade.Serialized.Stations
             }
 
 
-            MyAPIGateway.Utilities.ShowMessage(StationType, "update items :"+ multi.ToString());
+            MyAPIGateway.Utilities.ShowMessage(StationType, "update items :"+ multi);
             // remove prod from buyItems
-            foreach (TradeItem tradeItem in buyItems)
+            foreach (Item tradeItem in buyItems)
             {
                 if(tradeItem.CurrentCargo > 0)
                 {
@@ -109,15 +109,15 @@ namespace Elitesuppe.Trade.Serialized.Stations
         public override void TakeSettingData(StationBase oldStationData)
         {
             base.TakeSettingData(oldStationData);
-            foreach (TradeItem beforeItem in oldStationData.Goods)
+            foreach (Item beforeItem in oldStationData.Goods)
             {
-                foreach (TradeItem nowItem in Goods)
+                foreach (Item nowItem in Goods)
                 {
                     if (nowItem.SerializedDefinition != beforeItem.SerializedDefinition) continue;
 
-                    nowItem.PriceModel.Price = beforeItem.PriceModel.Price;
-                    nowItem.PriceModel.MinPercent = beforeItem.PriceModel.MinPercent;
-                    nowItem.PriceModel.MaxPercent = beforeItem.PriceModel.MaxPercent;
+                    nowItem.Price.Amount = beforeItem.Price.Amount;
+                    nowItem.Price.MinPercent = beforeItem.Price.MinPercent;
+                    nowItem.Price.MaxPercent = beforeItem.Price.MaxPercent;
                     nowItem.CargoSize = beforeItem.CargoSize;
 
                     break; // first out

@@ -6,15 +6,15 @@ using Elitesuppe.Trade.TradeGoods;
 namespace Elitesuppe.Trade.Serialized.Items
 {
     [Serializable]
-    public class TradeItem
+    public class Item
     {
-        public TradeItem()
+        public Item()
         {
         }
 
-        public TradeItem(
+        public Item(
             MyDefinitionId itemType,
-            PriceModel priceModel,
+            Price price,
             bool sell,
             bool buy,
             int cargoSize = 1000,
@@ -22,16 +22,16 @@ namespace Elitesuppe.Trade.Serialized.Items
         )
         {
             _definition = itemType;
-            PriceModel = priceModel;
+            Price = price;
             CargoSize = cargoSize;
             CurrentCargo = currentCargo;
             IsSell = sell;
             IsBuy = buy;
         }
 
-        public TradeItem(
+        public Item(
             string itemType,
-            PriceModel priceModel,
+            Price price,
             bool sell,
             bool buy,
             int cargoSize = 1000,
@@ -41,7 +41,7 @@ namespace Elitesuppe.Trade.Serialized.Items
             try
             {
                 _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
-                PriceModel = priceModel;
+                Price = price;
                 CargoSize = cargoSize;
                 CurrentCargo = currentCargo;
                 IsSell = sell;
@@ -53,13 +53,30 @@ namespace Elitesuppe.Trade.Serialized.Items
             }
         }
 
+        public Item(
+            string itemType,
+            Price price,
+            double required = 0f,
+            double result = 0f,
+            int cargoSize = 1000,
+            int currentCargo = 500
+        )
+        {
+            _definition = Inventory.ItemDefinitionFactory.DefinitionFromString(itemType);
+            Price = price;
+            CargoSize = cargoSize;
+            CurrentCargo = currentCargo;
+            Required = required;
+            Result = result;
+            IsSell = false;
+            IsBuy = false;
+        }
+
         private MyDefinitionId _definition;
+
         public MyDefinitionId Definition
         {
-            get
-            {
-                return _definition;
-            }
+            get { return _definition; }
         }
 
         public string SerializedDefinition
@@ -87,12 +104,16 @@ namespace Elitesuppe.Trade.Serialized.Items
 
         public double CargoSize { get; set; } = double.MaxValue;
 
+        public double Required { get; set; } = 0;
+
+        public double Result { get; set; } = 0;
+
         public double CargoRatio
         {
             get { return 1f / CargoSize * CurrentCargo; }
         }
 
-        public PriceModel PriceModel = new PriceModel(1.0);
+        public Price Price = new Price(1.0);
 
         public override string ToString()
         {
