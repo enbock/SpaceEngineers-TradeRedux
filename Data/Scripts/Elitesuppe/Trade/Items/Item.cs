@@ -13,23 +13,6 @@ namespace EliteSuppe.Trade.Items
         }
 
         public Item(
-            MyDefinitionId itemType,
-            Price price,
-            bool sell,
-            bool buy,
-            double cargoSize = 1000,
-            double currentCargo = 500
-        )
-        {
-            _definition = itemType;
-            Price = price;
-            CargoSize = cargoSize;
-            CurrentCargo = currentCargo;
-            IsSell = sell;
-            IsBuy = buy;
-        }
-
-        public Item(
             string itemType,
             Price price,
             bool sell,
@@ -62,14 +45,21 @@ namespace EliteSuppe.Trade.Items
             double currentCargo = 500
         )
         {
-            _definition = ItemDefinitionFactory.DefinitionFromString(itemType);
-            Price = price;
-            CargoSize = cargoSize;
-            CurrentCargo = currentCargo;
-            Required = required;
-            Result = result;
-            IsSell = false;
-            IsBuy = false;
+            try
+            {
+                _definition = ItemDefinitionFactory.DefinitionFromString(itemType);
+                Price = price;
+                CargoSize = cargoSize;
+                CurrentCargo = currentCargo;
+                Required = required;
+                Result = result;
+                IsSell = false;
+                IsBuy = false;
+            }
+            catch (UnknownItemException)
+            {
+                //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
+            }
         }
 
         private MyDefinitionId _definition;

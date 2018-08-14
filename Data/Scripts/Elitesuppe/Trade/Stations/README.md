@@ -12,7 +12,7 @@
 
 ## Technical Station Implementation
 
-* FactoryStation - Recipient based factory (stop when full or not enough resources)
+* FactoryStation - Recipe based factory (stop when full or not enough resources)
 * TradingStation - Creates and destroys stock from/into void
 
 # Feature for stations

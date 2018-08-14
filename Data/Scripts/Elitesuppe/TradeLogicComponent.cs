@@ -13,11 +13,11 @@ using VRage.ObjectBuilders;
 namespace Elitesuppe
 {
     [MyEntityComponentDescriptor(
-        typeof(MyObjectBuilder_TextPanel), 
+        typeof(MyObjectBuilder_TextPanel),
         false,
         new string[]
         {
-            "Elitesuppe_TradeRedux_TradeStation", 
+            "Elitesuppe_TradeRedux_TradeStation",
             "Elitesuppe_TradeRedux_MiningStation",
             "Elitesuppe_TradeRedux_IronForge"
         }
@@ -191,6 +191,16 @@ namespace Elitesuppe
                     if (stationData.IndexOf("<TradeStation", tagEndOffset + 1, 40, StringComparison.Ordinal) != -1)
                     {
                         return MyAPIGateway.Utilities.SerializeFromXML<TradeStation>(stationData);
+                    }
+
+                    if (stationData.IndexOf("<IronForge", tagEndOffset + 1, 40, StringComparison.Ordinal) != -1)
+                    {
+                        return MyAPIGateway.Utilities.SerializeFromXML<IronForge>(stationData);
+                    }
+
+                    if (stationData.IndexOf("<MiningStation", tagEndOffset + 1, 40, StringComparison.Ordinal) != -1)
+                    {
+                        return MyAPIGateway.Utilities.SerializeFromXML<MiningStation>(stationData);
                     }
                 }
                 catch (InvalidOperationException e)
