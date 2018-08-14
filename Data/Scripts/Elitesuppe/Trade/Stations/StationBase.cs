@@ -34,10 +34,9 @@ namespace EliteSuppe.Trade.Stations
         public static StationBase Factory(string blockName, long ownerId)
         {
             if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Station Block name was empty");
-            string name = blockName.ToUpper();
 
-            if (TradeStation.StationType.ToUpper() == name) return new TradeStation(ownerId);
-
+            if (TradeStation.StationType == blockName) return new TradeStation(ownerId);
+            
             throw new ArgumentException("Station Block name did not match a station kind");
         }
 

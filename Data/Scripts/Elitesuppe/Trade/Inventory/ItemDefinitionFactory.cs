@@ -15,9 +15,9 @@ namespace Elitesuppe.Trade.Inventory
                 throw new UnknownItemException("<Empty defition>");
 
             var input = definition.Trim();
-            MyDefinitionId defId;
-            if (MyDefinitionId.TryParse(input, out defId))
-                return defId;
+            MyDefinitionId foundDefinitionId;
+            if (MyDefinitionId.TryParse(input, out foundDefinitionId))
+                return foundDefinitionId;
 
             Type objectBuilder;
             string subType = input;
@@ -89,131 +89,6 @@ namespace Elitesuppe.Trade.Inventory
 
 
         }
-
-        private static List<MyDefinitionId> _ores;
-
-        public static List<MyDefinitionId> Ores
-        {
-            get
-            {
-                if (_ores != null) return _ores;
-                _ores = new List<MyDefinitionId>();
-                string[] oreTypes;
-                MyDefinitionManager.Static.GetOreTypeNames(out oreTypes);
-
-                foreach (var oreType in oreTypes)
-                {
-                    if (!oreType.Equals("Scrap") && !oreType.Equals("Organic"))
-                        _ores.Add(new MyDefinitionId(typeof(MyObjectBuilder_Ore), oreType));
-                }
-
-                return _ores;
-            }
-        }
-
-        private static List<MyDefinitionId> _ingots;
-
-        public static List<MyDefinitionId> Ingots
-        {
-            get
-            {
-                if (_ingots != null) return _ingots;
-                _ingots = new List<MyDefinitionId>();
-                string[] ingotTypes;
-                MyDefinitionManager.Static.GetOreTypeNames(out ingotTypes);
-
-                foreach (var ingotType in ingotTypes)
-                {
-                    MyBlueprintDefinitionBase ingot;
-                    
-                    if (ingotType.Equals("Scrap") || ingotType.Equals("Organic")) continue;
-                    if (!MyDefinitionManager.Static.TryGetIngotBlueprintDefinition(
-                        new MyDefinitionId(typeof(MyObjectBuilder_Ingot), ingotType),
-                        out ingot
-                    )) continue;
-
-                    foreach (var res in ingot.Results)
-                        _ingots.Add(res.Id);
-                }
-
-                return _ingots;
-            }
-        }
-
-        private static List<MyDefinitionId> _components;
-
-        public static List<MyDefinitionId> Components
-        {
-            get
-            {
-                if (_components != null) return _components;
-                _components = new List<MyDefinitionId>();
-                foreach (var bd in MyDefinitionManager.Static.GetBlueprintDefinitions())
-                {
-                    if (bd.InputItemType != typeof(MyObjectBuilder_Ingot) ||
-                        bd.Results.Any(r => r.Id.TypeId != typeof(MyObjectBuilder_Component))
-                    ) continue;
-
-                    foreach (var result in bd.Results)
-                    {
-                        _components.Add(result.Id);
-                    }
-                }
-
-                _components = _components.Distinct().ToList();
-
-                return _components;
-            }
-        }
-
-        private static List<MyDefinitionId> _playerTools;
-
-        public static List<MyDefinitionId> PlayerTools
-        {
-            get
-            {
-                if (_playerTools != null) return _playerTools;
-                _playerTools = new List<MyDefinitionId>();
-                foreach (var bd in MyDefinitionManager.Static.GetHandItemDefinitions())
-                {
-                    if (bd.AvailableInSurvival && bd.Public)
-                    {
-                        if (!bd.GetObjectBuilder()
-                                .Id.TypeIdString.Equals("MyObjectBuilder_GoodAIControlHandTool") &&
-                            !bd.GetObjectBuilder().Id.TypeIdString.Equals("MyObjectBuilder_CubePlacer"))
-                            _playerTools.Add(bd.PhysicalItemId);
-                    }
-                }
-
-                _playerTools = _playerTools.Distinct().ToList();
-
-                return _playerTools;
-            }
-        }
-
-        private static List<MyDefinitionId> _ammunitions;
-
-        public static List<MyDefinitionId> Ammunitions
-        {
-            get
-            {
-                if (_ammunitions != null) return _ammunitions;
-                _ammunitions = new List<MyDefinitionId>();
-                foreach (var bd in MyDefinitionManager.Static.GetAllDefinitions()
-                    .Where(def => def.Id.TypeId == typeof(MyObjectBuilder_AmmoMagazine)))
-                {
-                    if (bd.AvailableInSurvival && bd.Public)
-                    {
-                        _ammunitions.Add(bd.Id);
-                    }
-                }
-
-                _ammunitions = _ammunitions.Distinct().ToList();
-
-                return _ammunitions;
-            }
-        }
-
 
         public static Dictionary<MyDefinitionId, double> GetRecipeInput(
             MyDefinitionId definitionId,

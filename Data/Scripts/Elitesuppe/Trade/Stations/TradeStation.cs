@@ -15,7 +15,7 @@ namespace EliteSuppe.Trade.Stations
     {
         public double ProduceFrom = 0.25f;
         public double ReduceFrom = 0.75f;
-        public const string StationType = "TradeStation";
+        public const string StationType = "Elitesuppe_TradeRedux_TradeStation";
         
         public TradeStation() { }
 
@@ -53,10 +53,7 @@ namespace EliteSuppe.Trade.Stations
 
                 if (itemCount > tradeItem.CargoSize) itemCount = tradeItem.CargoSize;
 
-                if (!(ItemDefinitionFactory.Ores.Contains(itemId) || ItemDefinitionFactory.Ingots.Contains(itemId)))
-                {
-                    itemCount = Math.Floor(itemCount);
-                }
+                itemCount = Math.Floor(itemCount);
 
                 if (itemCount > 0)
                 {

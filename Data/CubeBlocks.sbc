@@ -4,9 +4,9 @@
     <Definition xsi:type="MyObjectBuilder_TextPanelDefinition">
       <Id>
         <TypeId>TextPanel</TypeId>
-        <SubtypeId>ElitesuppeTradeRedux_LargeLCDPanelWide</SubtypeId>
+        <SubtypeId>Elitesuppe_TradeRedux_TradeStation</SubtypeId>
       </Id>
-      <DisplayName>Elitesuppe Trade Station Redux</DisplayName>
+      <DisplayName>Elitesuppe TradeRedux Station</DisplayName>
       <Icon>Textures\GUI\Icons\Cubes\LCDPanelWide.dds</Icon>
       <CubeSize>Large</CubeSize>
       <BlockTopology>TriangleMesh</BlockTopology>

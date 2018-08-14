@@ -12,7 +12,7 @@ using VRage.ObjectBuilders;
 
 namespace Elitesuppe
 {
-    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TextPanel), false, "ElitesuppeTradeRedux_LargeLCDPanelWide")]
+    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_TextPanel), false, "Elitesuppe_TradeRedux_TradeStation")]
     public class TradeLogicComponent : MyGameLogicComponent
     {
         private MyObjectBuilder_EntityBase _objectBuilder;
@@ -192,7 +192,9 @@ namespace Elitesuppe
 
             try
             {
-                return StationBase.Factory(LcdPanel.CustomName ?? LcdPanel.CustomNameWithFaction, LcdPanel.OwnerId);
+                string blockName = LcdPanel.BlockDefinition.SubtypeId;
+                Log("DEF? "+blockName);
+                return StationBase.Factory(blockName, LcdPanel.OwnerId);
             }
             catch (ArgumentException)
             {
