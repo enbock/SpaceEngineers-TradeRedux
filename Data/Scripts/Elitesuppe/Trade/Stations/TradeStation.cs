@@ -37,8 +37,8 @@ namespace EliteSuppe.Trade.Stations
                 new Item("MyObjectBuilder_Ingot/Silicon", new Price(0.00044D), false, true, 100000D, 0),
                 new Item("MyObjectBuilder_Ingot/Nickel", new Price(0.00084D), false, true, 100000D, 0),
                 new Item("MyObjectBuilder_Ingot/Cobalt", new Price(0.001D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Ingot/Iron", new Price(0.000014D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Component/SpaceCoin", new Price(1000D), true, false, 10000D, 0)
+                //new Item("MyObjectBuilder_Ingot/Iron", new Price(0.000014D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Component/SpaceCoin", new Price(300D), true, false, 10000D, 0)
             };
         }
 

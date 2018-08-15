@@ -61,11 +61,17 @@ namespace EliteSuppe.Trade.Stations
 
         public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
-            var itemCount = InventoryApi.CountItemsInventory(cargoBlock, item.Definition);
-            var maximumItemsPerTransfer = item.CargoSize * 0.01; //10% of max
+            double availableCount = InventoryApi.CountItemsInventory(cargoBlock, item.Definition);
+            double itemCount = availableCount;
+            double maximumItemsPerTransfer = item.CargoSize * 0.01;
             if (!(itemCount > 0)) return;
             var pricing = item.Price;
             var buyPrice = pricing.GetBuyPrice(item.CargoRatio);
+            double minimumItemPerTransfer = (1D / buyPrice) * 2D;
+            if (maximumItemsPerTransfer < minimumItemPerTransfer * 5D)
+            {
+                maximumItemsPerTransfer = minimumItemPerTransfer * 5D;
+            }
 
             if (itemCount > maximumItemsPerTransfer) itemCount = maximumItemsPerTransfer;
 
@@ -75,6 +81,13 @@ namespace EliteSuppe.Trade.Stations
             }
 
             itemCount = Math.Floor(itemCount);
+
+            if (itemCount < minimumItemPerTransfer)
+            {
+                if (minimumItemPerTransfer > availableCount) return;
+                
+                itemCount = minimumItemPerTransfer;
+            }
 
             var removedItemsCount = InventoryApi.RemoveFromInventory(cargoBlock, item.Definition, itemCount);
             if (removedItemsCount <= 0) return;
