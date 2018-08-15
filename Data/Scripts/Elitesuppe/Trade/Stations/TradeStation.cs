@@ -18,7 +18,7 @@ namespace EliteSuppe.Trade.Stations
     {
         public double ProduceFrom = 0.25f;
         public double ReduceFrom = 0.75f;
-        public List<Item> Goods { get; } = new List<Item>();
+        public List<Item> Goods = new List<Item>();
         public const string StationType = "Elitesuppe_TradeRedux_TradeStation";
 
         public TradeStation()
@@ -29,8 +29,16 @@ namespace EliteSuppe.Trade.Stations
         {
             Goods = new List<Item>
             {
-                new Item("MyObjectBuilder_Ingot/Gold", new Price(2f), true, true, 1000, 0),
-                new Item("MyObjectBuilder_Ingot/Silver", new Price(1f), true, true, 1000, 0)
+                new Item("MyObjectBuilder_Ingot/Platinum", new Price(0.07D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Ingot/Gold", new Price(0.03D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Ingot/Uranium", new Price(0.02D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Ingot/Silver", new Price(0.003D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Ingot/Magnesium", new Price(0.03D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Ingot/Silicon", new Price(0.00044D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Ingot/Nickel", new Price(0.00084D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Ingot/Cobalt", new Price(0.001D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Ingot/Iron", new Price(0.000014D), false, true, 100000D, 0),
+                new Item("MyObjectBuilder_Component/SpaceCoin", new Price(1000D), true, false, 10000D, 0)
             };
         }
 
@@ -51,7 +59,7 @@ namespace EliteSuppe.Trade.Stations
 
                 if (cargoName == null)
                 {
-                    MyAPIGateway.Utilities.ShowMessage("StationWarning:", "CustomData = null");
+                    //MyAPIGateway.Utilities.ShowMessage("StationWarning:", "CustomData = null");
                     continue;
                 }
 
@@ -132,25 +140,27 @@ namespace EliteSuppe.Trade.Stations
                     }
                 }
 
-                MyAPIGateway.Utilities.ShowMessage("HandleProdCycle",
+                /*
+                 MyAPIGateway.Utilities.ShowMessage("HandleProdCycle",
                     tradeItem.Definition + "s: " + itemCount.ToString("0.#####") + "/" +
                     tradeItem.CargoRatio.ToString("0.###") + "/" + tradeItem.CurrentCargo);
+                 */
             }
         }
 
         public override void TakeSettingData(StationBase oldStationData)
         {
             base.TakeSettingData(oldStationData);
-            foreach (Item beforeItem in ((TradeStation)oldStationData).Goods)
+
+            List<Item> currentGoods = Goods;
+            Goods = ((TradeStation) oldStationData).Goods;
+            foreach (Item nowItem in Goods)
             {
-                foreach (Item nowItem in Goods)
+                foreach (Item beforeItem in currentGoods)
                 {
                     if (nowItem.SerializedDefinition != beforeItem.SerializedDefinition) continue;
 
-                    nowItem.Price.Amount = beforeItem.Price.Amount;
-                    nowItem.Price.MinPercent = beforeItem.Price.MinPercent;
-                    nowItem.Price.MaxPercent = beforeItem.Price.MaxPercent;
-                    nowItem.CargoSize = beforeItem.CargoSize;
+                    nowItem.CurrentCargo = beforeItem.CurrentCargo;
 
                     break; // first out
                 }

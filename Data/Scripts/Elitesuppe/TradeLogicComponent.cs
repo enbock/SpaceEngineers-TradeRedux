@@ -255,6 +255,7 @@ namespace Elitesuppe
 
         private void Log(string text)
         {
+            return;
             string line = text; //Logger.Log(text);
             MyAPIGateway.Utilities.ShowMessage("TE-Log", line);
 

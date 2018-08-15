@@ -30,7 +30,7 @@ namespace Elitesuppe
         {
             _isLoaded = true;
             MyAPIGateway.Utilities.MessageEntered += Utilities_MessageEntered;
-            MyAPIGateway.Utilities.ShowMessage("Elitesuppe", "Mod loaded.");
+            //MyAPIGateway.Utilities.ShowMessage("Elitesuppe", "Mod loaded.");
         }
 
         private void Utilities_MessageEntered(string messageText, ref bool sendToOthers)

@@ -64,7 +64,7 @@ namespace Elitesuppe.Trade
             var sender = player.FirstOrDefault();
             if (sender == null)
             {
-                MyAPIGateway.Utilities.ShowMessage("TE", "no player matching found: " + message.SendingPlayer);
+                MyAPIGateway.Utilities.ShowMessage("TR", "no player matching found: " + message.SendingPlayer);
                 return;
             }
 

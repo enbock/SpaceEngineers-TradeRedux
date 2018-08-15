@@ -133,8 +133,10 @@ namespace Elitesuppe.Trade.Inventory
 
             foreach (var item in items)
             {
+                /*
                 MyAPIGateway.Utilities.ShowMessage("skl",
                     "Item " + item.ItemId + ", Amount: " + item.Amount + ", Type:" + item.Content);
+                 */
             }
         }
 

@@ -51,12 +51,14 @@ namespace Elitesuppe.Trade
             var buyBuilder = new StringBuilder();
             var sellBuilder = new StringBuilder();
             buyBuilder.AppendLine("StationName:" + Base.CustomName);
-            buyBuilder.AppendLine("StationType:" + Station.Type);
+            buyBuilder.AppendLine("");
+            //buyBuilder.AppendLine("StationType:" + Station.Type);
             buyBuilder.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
             buyBuilder.AppendLine("Buying: (actual cargo)");
 
             sellBuilder.AppendLine("StationName:" + Base.CustomName);
-            sellBuilder.AppendLine("StationType:" + Station.Type);
+            sellBuilder.AppendLine("");
+            //sellBuilder.AppendLine("StationType:" + Station.Type);
             sellBuilder.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
             sellBuilder.AppendLine("Selling: (actual cargo)");
 
