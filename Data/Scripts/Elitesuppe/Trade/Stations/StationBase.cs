@@ -98,7 +98,7 @@ namespace EliteSuppe.Trade.Stations
             }
 
             double paymentAmount = Math.Floor(buyPrice * itemCount);
-            if (credit.CargoSize > 0 && paymentAmount > credit.CurrentCargo)
+            if (IsCreditLimitationEnabled(credit) && paymentAmount > credit.CurrentCargo)
             {
                 paymentAmount = credit.CargoSize;
                 itemCount = Math.Ceiling(paymentAmount / buyPrice);
@@ -124,7 +124,7 @@ namespace EliteSuppe.Trade.Stations
                     return;
                 }
 
-                if (credit.CargoSize > 0)
+                if (IsCreditLimitationEnabled(credit))
                 {
                     credit.CurrentCargo -= givenCredits;
                 }
@@ -181,12 +181,20 @@ namespace EliteSuppe.Trade.Stations
                     return;
                 }
 
-                credit.CurrentCargo += payedCredits;
+                if (IsCreditLimitationEnabled(credit))
+                {
+                    credit.CurrentCargo += payedCredits;
+                }
             }
             catch (UnknownItemException)
             {
                 //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
             }
+        }
+
+        private static bool IsCreditLimitationEnabled(Item credit)
+        {
+            return credit.CargoSize > 0;
         }
 
         public static Dictionary<IMyShipConnector, IMyCubeGrid> GetConnectedShips(IMyEntity entity)
