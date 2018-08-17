@@ -29,16 +29,16 @@ namespace EliteSuppe.Trade.Stations
         {
             Goods = new List<Item>
             {
-                new Item("MyObjectBuilder_Ingot/Platinum", new Price(0.07D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Ingot/Gold", new Price(0.03D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Ingot/Uranium", new Price(0.02D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Ingot/Silver", new Price(0.003D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Ingot/Magnesium", new Price(0.03D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Ingot/Silicon", new Price(0.00044D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Ingot/Nickel", new Price(0.00084D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Ingot/Cobalt", new Price(0.001D), false, true, 100000D, 0),
-                //new Item("MyObjectBuilder_Ingot/Iron", new Price(0.000014D), false, true, 100000D, 0),
-                new Item("MyObjectBuilder_Component/SpaceCoin", new Price(300D), true, false, 10000D, 0)
+                new Item("MyObjectBuilder_Ingot/Platinum", new Price(0.07f), false, true, 100000f, 0),
+                new Item("MyObjectBuilder_Ingot/Gold", new Price(0.03f), false, true, 100000f, 0),
+                new Item("MyObjectBuilder_Ingot/Uranium", new Price(0.02f), false, true, 100000f, 0),
+                new Item("MyObjectBuilder_Ingot/Silver", new Price(0.003f), false, true, 100000f, 0),
+                new Item("MyObjectBuilder_Ingot/Magnesium", new Price(0.03f), false, true, 100000f, 0),
+                new Item("MyObjectBuilder_Ingot/Silicon", new Price(0.00044f), false, true, 100000f, 0),
+                new Item("MyObjectBuilder_Ingot/Nickel", new Price(0.00084f), false, true, 100000f, 0),
+                new Item("MyObjectBuilder_Ingot/Cobalt", new Price(0.001f), false, true, 100000f, 0),
+                //new Item("MyObjectBuilder_Ingot/Iron", new Price(0.000014f), false, true, 100000f, 0),
+                new Item("MyObjectBuilder_Component/SpaceCoin", new Price(300f), true, false, 10000f, 0)
             };
         }
 
@@ -102,49 +102,41 @@ namespace EliteSuppe.Trade.Stations
 
             foreach (Item tradeItem in productionItems)
             {
-                bool sell = false;
-                MyDefinitionId itemId = tradeItem.Definition;
                 double itemCount = 0f;
 
                 if (tradeItem.CargoRatio > ReduceFrom)
                 {
                     itemCount = -1f * (tradeItem.CargoSize * 0.01f);
+                    if (itemCount > -1f) itemCount = -1f;
                 }
 
                 if (tradeItem.CargoRatio < ProduceFrom)
                 {
                     itemCount = tradeItem.CargoSize * 0.01f;
+                    if (itemCount < 1f) itemCount = 1f;
                 }
 
-                if (itemCount < 0)
-                {
-                    itemCount = Math.Abs(itemCount);
-                    sell = true;
-                }
+                itemCount = Math.Round(itemCount, 0);
 
-                if (itemCount > tradeItem.CargoSize) itemCount = tradeItem.CargoSize;
+                double newCargo = itemCount + tradeItem.CurrentCargo;
 
-                itemCount = Math.Floor(itemCount);
+                if (newCargo > tradeItem.CargoSize) newCargo = tradeItem.CargoSize;
+                if (newCargo < 0f) newCargo = 0f;
 
-                if (itemCount > 0)
-                {
-                    if (sell)
-                    {
-                        tradeItem.CurrentCargo -= itemCount;
-                        var sellPrice = tradeItem.Price.GetSellPrice(tradeItem.CargoRatio);
-                    }
-                    else
-                    {
-                        tradeItem.CurrentCargo += itemCount;
-                        var buyPrice = tradeItem.Price.GetBuyPrice(tradeItem.CargoRatio);
-                    }
-                }
+                tradeItem.CurrentCargo = newCargo;
 
                 /*
-                 MyAPIGateway.Utilities.ShowMessage("HandleProdCycle",
-                    tradeItem.Definition + "s: " + itemCount.ToString("0.#####") + "/" +
-                    tradeItem.CargoRatio.ToString("0.###") + "/" + tradeItem.CurrentCargo);
-                 */
+                MyAPIGateway.Utilities.ShowMessage(
+                    "HandleProdCycle",
+                    tradeItem.Definition +
+                    "s: " +
+                    itemCount.ToString("0.#####") +
+                    "/" +
+                    tradeItem.CargoRatio.ToString("0.###") +
+                    "/" +
+                    tradeItem.CurrentCargo
+                );
+                */
             }
         }
 

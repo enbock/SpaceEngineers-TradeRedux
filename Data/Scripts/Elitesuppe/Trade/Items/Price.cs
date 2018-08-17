@@ -1,5 +1,8 @@
-﻿namespace EliteSuppe.Trade.Items
+﻿using System;
+
+namespace EliteSuppe.Trade.Items
 {
+    [Serializable]
     public class Price
     {
         public Price()
@@ -19,18 +22,24 @@
 
         public double MaxPercent { get; set; } = 1.25f;
 
-        public double GetBuyPrice(double cargoVolumePercent = 0.5)
+        public double GetBuyPrice(double cargoVolumePercent = 0.5f)
         {
-            cargoVolumePercent = cargoVolumePercent > 1 ? 1 : cargoVolumePercent;
-            var preis = Amount * (1 - (1 - MinPercent) * cargoVolumePercent);
-            return preis;
+            return CalculatePrice(cargoVolumePercent);
         }
 
         public double GetSellPrice(double cargoVolumePercent = 0.5)
         {
-            cargoVolumePercent = cargoVolumePercent > 1 ? 1 : cargoVolumePercent;
-            var preis = Amount * (1 + (MaxPercent - 1) * (1 - cargoVolumePercent));
-            return preis;
+            return CalculatePrice(cargoVolumePercent);
+        }
+
+        protected double CalculatePrice(double currentCargo = 0.5f)
+        {
+            currentCargo = currentCargo > 1f ? 1f : currentCargo;
+            currentCargo = currentCargo < 0f ? 0f : currentCargo;
+
+            double relation = MaxPercent - MinPercent;
+
+            return Amount * (MinPercent + relation * (1f - currentCargo));
         }
 
         public override string ToString()

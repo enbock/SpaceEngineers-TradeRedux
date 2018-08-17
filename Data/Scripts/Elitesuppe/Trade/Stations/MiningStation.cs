@@ -37,7 +37,7 @@ namespace EliteSuppe.Trade.Stations
                         new Item("MyObjectBuilder_Ore/Magnesium", new Price(200f), 0, 1, 10000, 0),
                         new Item("MyObjectBuilder_Ore/Platinum", new Price(300f), 0, 1, 10000, 0)
                     },
-                    1D
+                    1f
                 )
             };
         }

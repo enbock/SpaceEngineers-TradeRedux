@@ -14,7 +14,7 @@ namespace EliteSuppe.Trade.Items
         {
         }
 
-        public Recipe(List<Item> requiredGoods, List<Item> producingGoods, double time = 1D)
+        public Recipe(List<Item> requiredGoods, List<Item> producingGoods, double time = 1f)
         {
             RequiredGoods = requiredGoods;
             ProducingGoods = producingGoods;

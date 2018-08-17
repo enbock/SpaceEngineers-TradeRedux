@@ -31,7 +31,7 @@ namespace EliteSuppe.Trade.Stations
                     {
                         new Item("MyObjectBuilder_Component/SteelPlate", new Price(100f), 0, 1, 100000, 0)
                     },
-                    1D
+                    1f
                 ),
                 new Recipe(
                     new List<Item>
@@ -44,7 +44,7 @@ namespace EliteSuppe.Trade.Stations
                     {
                         new Item("MyObjectBuilder_Component/Construction Component", new Price(100f), 0, 1, 100000, 0)
                     },
-                    1D
+                    1f
                 ),
                 new Recipe(
                     new List<Item>
@@ -57,7 +57,7 @@ namespace EliteSuppe.Trade.Stations
                     {
                         new Item("MyObjectBuilder_Component/Interior Plate", new Price(100f), 0, 1, 100000, 0)
                     },
-                    1D
+                    1f
                 )
             };
         }

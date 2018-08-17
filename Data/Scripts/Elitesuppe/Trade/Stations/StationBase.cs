@@ -67,10 +67,10 @@ namespace EliteSuppe.Trade.Stations
             if (!(itemCount > 0)) return;
             var pricing = item.Price;
             var buyPrice = pricing.GetBuyPrice(item.CargoRatio);
-            double minimumItemPerTransfer = (1D / buyPrice) * 2D;
-            if (maximumItemsPerTransfer < minimumItemPerTransfer * 5D)
+            double minimumItemPerTransfer = (1f / buyPrice) * 2f;
+            if (maximumItemsPerTransfer < minimumItemPerTransfer * 5f)
             {
-                maximumItemsPerTransfer = minimumItemPerTransfer * 5D;
+                maximumItemsPerTransfer = minimumItemPerTransfer * 5f;
             }
 
             if (itemCount > maximumItemsPerTransfer) itemCount = maximumItemsPerTransfer;

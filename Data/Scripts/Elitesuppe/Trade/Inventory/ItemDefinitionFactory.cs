@@ -111,13 +111,13 @@ namespace Elitesuppe.Trade.Inventory
 
             if (bd == null || !bd.Results.Any() || !bd.Prerequisites.Any()) return comp;
             var outAmount = bd.Results.FirstOrDefault().Amount;
-            var normalizedOutAmount = outAmount.RawValue / 1000000d;
+            var normalizedOutAmount = outAmount.RawValue / 1000000f;
 
             foreach (var prerequisite in bd.Prerequisites)
             {
                 if (!recurseToOres || prerequisite.Id.TypeId == typeof(MyObjectBuilder_Ore))
                 {
-                    var normalizedRequiredAmount = prerequisite.Amount.RawValue / 1000000d;
+                    var normalizedRequiredAmount = prerequisite.Amount.RawValue / 1000000f;
                     if (!comp.ContainsKey(prerequisite.Id))
                         comp.Add(prerequisite.Id, normalizedRequiredAmount / normalizedOutAmount);
                     else comp[prerequisite.Id] += normalizedRequiredAmount / normalizedOutAmount;
