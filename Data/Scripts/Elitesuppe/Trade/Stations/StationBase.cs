@@ -59,9 +59,14 @@ namespace EliteSuppe.Trade.Stations
         {
         }
 
-        public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
+        public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item, Item credit = null)
         {
-            MyDefinitionId creditItem = ItemDefinitionFactory.DefinitionFromString(Definitions.Credits);
+            if (credit == null)
+            {
+                credit = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
+            }
+
+            MyDefinitionId creditDefinition = credit.Definition;
 
             double availableCount = InventoryApi.CountItemsInventory(cargoBlock, item.Definition);
             if (availableCount <= 0) return;
@@ -92,18 +97,36 @@ namespace EliteSuppe.Trade.Stations
                 itemCount = minimumItemPerTransfer;
             }
 
-            var removedItemsCount = InventoryApi.RemoveFromInventory(cargoBlock, item.Definition, itemCount);
+            double paymentAmount = Math.Floor(buyPrice * itemCount);
+            if (credit.CargoSize > 0 && paymentAmount > credit.CurrentCargo)
+            {
+                paymentAmount = credit.CargoSize;
+                itemCount = Math.Ceiling(paymentAmount / buyPrice);
+            }
+
+            var removedItemsCount =
+                Math.Floor(InventoryApi.RemoveFromInventory(cargoBlock, item.Definition, itemCount));
             if (removedItemsCount <= 0) return;
+
+            // could less items removed as expected
+            if (removedItemsCount < itemCount) paymentAmount = Math.Floor(buyPrice * removedItemsCount);
 
             item.CurrentCargo += removedItemsCount;
             try
             {
-                double paymentAmount = Math.Floor(buyPrice * removedItemsCount);
-                double givenCredits = InventoryApi.AddToInventory(cargoBlock, creditItem, paymentAmount);
+                double givenCredits = InventoryApi.AddToInventory(cargoBlock, creditDefinition, paymentAmount);
 
                 if (givenCredits <= 0)
                 {
+                    // rollback
+                    item.CurrentCargo -= removedItemsCount;
                     InventoryApi.AddToInventory(cargoBlock, item.Definition, removedItemsCount);
+                    return;
+                }
+
+                if (credit.CargoSize > 0)
+                {
+                    credit.CurrentCargo -= givenCredits;
                 }
             }
             catch (UnknownItemException)
@@ -112,9 +135,14 @@ namespace EliteSuppe.Trade.Stations
             }
         }
 
-        public virtual void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
+        public virtual void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item, Item credit = null)
         {
-            MyDefinitionId creditItem = ItemDefinitionFactory.DefinitionFromString(Definitions.Credits);
+            if (credit == null)
+            {
+                credit = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
+            }
+
+            MyDefinitionId creditDefinition = credit.Definition;
 
             double sellPrice = item.Price.GetSellPrice(item.CargoRatio);
             MyDefinitionId itemDefinition = item.Definition;
@@ -122,10 +150,7 @@ namespace EliteSuppe.Trade.Stations
             double maximumItemsPerTransfer = Math.Round(item.CargoSize * 0.01f, 0); //1% of max
             if (maximumItemsPerTransfer < 1f) maximumItemsPerTransfer = 1f;
 
-            double creditsInCargo = InventoryApi.CountItemsInventory(
-                cargoBlock,
-                creditItem
-            );
+            double creditsInCargo = InventoryApi.CountItemsInventory(cargoBlock, creditDefinition);
             if (creditsInCargo <= 1f) return;
 
             double sellCount = Math.Floor(creditsInCargo / sellPrice);
@@ -141,7 +166,7 @@ namespace EliteSuppe.Trade.Stations
 
             try
             {
-                double payedCredits = InventoryApi.RemoveFromInventory(cargoBlock, creditItem, paymentAmount);
+                double payedCredits = InventoryApi.RemoveFromInventory(cargoBlock, creditDefinition, paymentAmount);
 
                 if (payedCredits <= 0) return;
 
@@ -151,8 +176,12 @@ namespace EliteSuppe.Trade.Stations
                 if (selledItems <= 0)
                 {
                     // rollback if nothing given
-                    InventoryApi.AddToInventory(cargoBlock, creditItem, paymentAmount);
+                    item.CurrentCargo += sellCount;
+                    InventoryApi.AddToInventory(cargoBlock, creditDefinition, paymentAmount);
+                    return;
                 }
+
+                credit.CurrentCargo += payedCredits;
             }
             catch (UnknownItemException)
             {
