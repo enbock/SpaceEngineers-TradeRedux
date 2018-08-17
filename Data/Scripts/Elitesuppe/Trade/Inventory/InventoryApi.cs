@@ -1,10 +1,9 @@
 ﻿using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.ObjectBuilders;
 using VRage.Game.ModAPI;
+using VRage.ObjectBuilders;
 
 namespace Elitesuppe.Trade.Inventory
 {
@@ -13,7 +12,7 @@ namespace Elitesuppe.Trade.Inventory
     /// </summary>
     public static class InventoryApi
     {
-        static double multi = 1000000; //1000000
+        private static double _multi = 1000000; //1000000
 
         /// <summary>
         /// Add an item to an inventory
@@ -34,19 +33,17 @@ namespace Elitesuppe.Trade.Inventory
         private static double AddToInventory(IMyInventory inventory, MyDefinitionId itemDefinition, double amount)
         {
             var content = (MyObjectBuilder_PhysicalObject) MyObjectBuilderSerializer.CreateNewObject(itemDefinition);
-            MyObjectBuilder_InventoryItem inventoryItem = new MyObjectBuilder_InventoryItem
+            MyObjectBuilder_InventoryItem item = new MyObjectBuilder_InventoryItem
             {
-                Amount = new MyFixedPoint() {RawValue = (long) (amount * multi)},
+                Amount = new MyFixedPoint {RawValue = (long) (amount * _multi)},
                 PhysicalContent = content
             };
 
-            if (inventory.CanItemsBeAdded(inventoryItem.Amount, itemDefinition))
-            {
-                inventory.AddItems(inventoryItem.Amount, inventoryItem.PhysicalContent, -1);
-                return amount;
-            }
+            if (!inventory.CanItemsBeAdded(item.Amount, itemDefinition)) return 0;
 
-            return 0;
+            inventory.AddItems(item.Amount, item.PhysicalContent);
+
+            return amount;
         }
 
         /// <summary>
@@ -68,27 +65,25 @@ namespace Elitesuppe.Trade.Inventory
         public static double RemoveFromInventory(IMyInventory inventory, MyDefinitionId itemDefinition, double amount)
         {
             var content = (MyObjectBuilder_PhysicalObject) MyObjectBuilderSerializer.CreateNewObject(itemDefinition);
-            MyObjectBuilder_InventoryItem inventoryItem = new MyObjectBuilder_InventoryItem
+            MyObjectBuilder_InventoryItem item = new MyObjectBuilder_InventoryItem
             {
-                Amount = new MyFixedPoint() {RawValue = (long) (amount * multi)},
+                Amount = new MyFixedPoint {RawValue = (long) (amount * _multi)},
                 PhysicalContent = content
             };
+            MyFixedPoint inventoryAmount = inventory.GetItemAmount(itemDefinition);
 
-            if (inventory.GetItemAmount(itemDefinition) >= inventoryItem.Amount)
+            if (inventoryAmount >= item.Amount)
             {
-                inventory.RemoveItemsOfType(inventoryItem.Amount, inventoryItem.PhysicalContent);
+                inventory.RemoveItemsOfType(item.Amount, item.PhysicalContent);
 
                 return amount;
             }
-            else if (inventory.GetItemAmount(itemDefinition) > 0)
-            {
-                var itemsAmount = inventory.GetItemAmount(itemDefinition);
-                inventory.RemoveItemsOfType(itemsAmount, inventoryItem.PhysicalContent);
 
-                return itemsAmount.RawValue == 0 ? 0 : (double) itemsAmount.RawValue / multi;
-            }
+            if (inventoryAmount <= 0) return 0;
 
-            return 0;
+            inventory.RemoveItemsOfType(inventoryAmount, item.PhysicalContent);
+
+            return inventoryAmount.RawValue == 0 ? 0 : inventoryAmount.RawValue / _multi;
         }
 
         /// <summary>
@@ -110,7 +105,7 @@ namespace Elitesuppe.Trade.Inventory
         {
             var itemsAmount = inventory.GetItemAmount(itemDefinition);
 
-            return itemsAmount.RawValue == 0 ? 0 : (double) itemsAmount.RawValue / multi;
+            return itemsAmount.RawValue == 0 ? 0 : itemsAmount.RawValue / _multi;
         }
 
 

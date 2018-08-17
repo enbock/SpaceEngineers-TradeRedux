@@ -53,7 +53,6 @@ namespace EliteSuppe.Trade.Stations
             foreach (IMySlimBlock block in cargoBlockList)
             {
                 IMyCubeBlock cargoBlock = block.FatBlock;
-                if (cargoBlock == null) continue;
 
                 var cargoName = (cargoBlock as IMyTerminalBlock)?.CustomData;
 

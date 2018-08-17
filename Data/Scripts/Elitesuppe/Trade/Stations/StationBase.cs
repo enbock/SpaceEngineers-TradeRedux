@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 using Elitesuppe.Trade;
 using Elitesuppe.Trade.Exceptions;
 using Elitesuppe.Trade.Inventory;
 using EliteSuppe.Trade.Items;
-using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
+using IMyShipConnector = Sandbox.ModAPI.IMyShipConnector;
 
 namespace EliteSuppe.Trade.Stations
 {
     [Serializable]
-    [System.Xml.Serialization.XmlRoot(Namespace = Definitions.Version)]
+    [XmlRoot(Namespace = Definitions.Version)]
     public abstract class StationBase
     {
         public string Type { get; } = "StationBaseType";
@@ -61,23 +61,26 @@ namespace EliteSuppe.Trade.Stations
 
         public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
+            MyDefinitionId creditItem = ItemDefinitionFactory.DefinitionFromString(Definitions.Credits);
+
             double availableCount = InventoryApi.CountItemsInventory(cargoBlock, item.Definition);
+            if (availableCount <= 0) return;
+
             double itemCount = availableCount;
-            double maximumItemsPerTransfer = item.CargoSize * 0.01;
-            if (!(itemCount > 0)) return;
+            double maximumItemsPerTransfer = Math.Ceiling(item.CargoSize * 0.01f);
             var pricing = item.Price;
             var buyPrice = pricing.GetBuyPrice(item.CargoRatio);
-            double minimumItemPerTransfer = (1f / buyPrice) * 2f;
-            if (maximumItemsPerTransfer < minimumItemPerTransfer * 5f)
+            double minimumItemPerTransfer = Math.Ceiling(1f / buyPrice);
+            if (maximumItemsPerTransfer < minimumItemPerTransfer)
             {
-                maximumItemsPerTransfer = minimumItemPerTransfer * 5f;
+                maximumItemsPerTransfer = minimumItemPerTransfer;
             }
 
             if (itemCount > maximumItemsPerTransfer) itemCount = maximumItemsPerTransfer;
 
-            if ((itemCount + item.CurrentCargo) > item.CargoSize)
+            if (itemCount + item.CurrentCargo > item.CargoSize)
             {
-                itemCount = (item.CargoSize - item.CurrentCargo);
+                itemCount = item.CargoSize - item.CurrentCargo;
             }
 
             itemCount = Math.Floor(itemCount);
@@ -85,23 +88,23 @@ namespace EliteSuppe.Trade.Stations
             if (itemCount < minimumItemPerTransfer)
             {
                 if (minimumItemPerTransfer > availableCount) return;
-                
+
                 itemCount = minimumItemPerTransfer;
             }
 
             var removedItemsCount = InventoryApi.RemoveFromInventory(cargoBlock, item.Definition, itemCount);
             if (removedItemsCount <= 0) return;
+
             item.CurrentCargo += removedItemsCount;
             try
             {
                 double paymentAmount = Math.Floor(buyPrice * removedItemsCount);
-                InventoryApi.AddToInventory(
-                    cargoBlock,
-                    ItemDefinitionFactory.DefinitionFromString(Definitions.Credits),
-                    paymentAmount
-                );
+                double givenCredits = InventoryApi.AddToInventory(cargoBlock, creditItem, paymentAmount);
 
-                // Logger.Log("Buy:" + itemCount + "  Payed Credits:" + paymentAmount + "   Taken item: " + removedItemsCount);
+                if (givenCredits <= 0)
+                {
+                    InventoryApi.AddToInventory(cargoBlock, item.Definition, removedItemsCount);
+                }
             }
             catch (UnknownItemException)
             {
@@ -111,49 +114,49 @@ namespace EliteSuppe.Trade.Stations
 
         public virtual void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
-            Price pricing = item.Price;
+            MyDefinitionId creditItem = ItemDefinitionFactory.DefinitionFromString(Definitions.Credits);
+
+            double sellPrice = item.Price.GetSellPrice(item.CargoRatio);
             MyDefinitionId itemDefinition = item.Definition;
 
-            double maximumItemsPerTransfer = item.CargoSize * 0.01f; //10% of max
+            double maximumItemsPerTransfer = Math.Round(item.CargoSize * 0.01f, 0); //1% of max
+            if (maximumItemsPerTransfer < 1f) maximumItemsPerTransfer = 1f;
 
             double creditsInCargo = InventoryApi.CountItemsInventory(
                 cargoBlock,
-                ItemDefinitionFactory.DefinitionFromString(Definitions.Credits)
+                creditItem
             );
-            if (!(creditsInCargo > 0)) return;
-            double sellPrice = pricing.GetSellPrice(item.CargoRatio);
-            double sellCount = creditsInCargo / sellPrice;
+            if (creditsInCargo <= 1f) return;
+
+            double sellCount = Math.Floor(creditsInCargo / sellPrice);
+
+            if (sellCount < 1f) return;
 
             if (sellCount > maximumItemsPerTransfer) sellCount = maximumItemsPerTransfer;
+            if (sellCount > item.CurrentCargo) sellCount = item.CurrentCargo;
 
-            if (sellCount > item.CurrentCargo)
-            {
-                sellCount = item.CurrentCargo;
-            }
-
-            sellCount = Math.Floor(sellCount);
             double paymentAmount = Math.Ceiling(sellPrice * sellCount);
 
-            if (creditsInCargo >= paymentAmount && (sellCount > 0))
-            {
-                try
-                {
-                    double removeCreditsFromCargo = InventoryApi.RemoveFromInventory(
-                        cargoBlock,
-                        ItemDefinitionFactory.DefinitionFromString(Definitions.Credits),
-                        paymentAmount
-                    );
-                    // Logger.Log("Sellcount:" + sellCount + "  Credits:" + ceditsInCargo + "   Taken credits: " + removeCreditsFromCargo);
+            if (paymentAmount > creditsInCargo) return;
 
-                    if (!(Math.Abs(removeCreditsFromCargo) > 0)) return;
-                    // if (paymentAmount != removeCreditsFromCargo) Logger.Log("pay/remove " + ceditsInCargo.ToString("0.00##") + "/" + removeCreditsFromCargo.ToString("0.00##"));
-                    InventoryApi.AddToInventory(cargoBlock, itemDefinition, sellCount);
-                    item.CurrentCargo -= sellCount;
-                }
-                catch (UnknownItemException)
+            try
+            {
+                double payedCredits = InventoryApi.RemoveFromInventory(cargoBlock, creditItem, paymentAmount);
+
+                if (payedCredits <= 0) return;
+
+                item.CurrentCargo -= sellCount;
+                double selledItems = InventoryApi.AddToInventory(cargoBlock, itemDefinition, sellCount);
+
+                if (selledItems <= 0)
                 {
-                    //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
+                    // rollback if nothing given
+                    InventoryApi.AddToInventory(cargoBlock, creditItem, paymentAmount);
                 }
+            }
+            catch (UnknownItemException)
+            {
+                //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
             }
         }
 
@@ -170,7 +173,7 @@ namespace EliteSuppe.Trade.Stations
             {
                 IMyShipConnector connector = slim.FatBlock as IMyShipConnector;
                 if (!(slim.FatBlock is IMyShipConnector)) continue;
-                if (connector.Status.Equals(Sandbox.ModAPI.Ingame.MyShipConnectorStatus.Connected))
+                if (connector.Status.Equals(MyShipConnectorStatus.Connected))
                 {
                     connections.Add(connector, connector.OtherConnector.GetTopMostParent() as IMyCubeGrid);
 
