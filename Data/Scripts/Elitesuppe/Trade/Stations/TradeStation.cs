@@ -38,7 +38,7 @@ namespace EliteSuppe.Trade.Stations
                 new Item("MyObjectBuilder_Ingot/Nickel", new Price(0.00084f), false, true, 100000f, 0),
                 new Item("MyObjectBuilder_Ingot/Cobalt", new Price(0.001f), false, true, 100000f, 0),
                 //new Item("MyObjectBuilder_Ingot/Iron", new Price(0.000014f), false, true, 100000f, 0),
-                new Item("MyObjectBuilder_Component/SpaceCoin", new Price(300f), true, false, 10000f, 0)
+                new Item("MyObjectBuilder_Component/SpaceCoin", new Price(100f), true, false, 10000f, 0)
             };
         }
 
@@ -52,17 +52,16 @@ namespace EliteSuppe.Trade.Stations
         {
             foreach (IMySlimBlock block in cargoBlockList)
             {
-                IMyCubeBlock cargoBlock = block.FatBlock;
+                IMyTerminalBlock cargoBlock = block.FatBlock as IMyTerminalBlock;
 
-                var cargoName = (cargoBlock as IMyTerminalBlock)?.CustomData;
+                if(cargoBlock == null) continue;
 
-                if (cargoName == null)
-                {
-                    //MyAPIGateway.Utilities.ShowMessage("StationWarning:", "CustomData = null");
-                    continue;
-                }
+                string name = cargoBlock.CustomName ?? cargoBlock.CustomNameWithFaction;
+                string customData = cargoBlock.CustomData;
 
-                Match match = _cargoBlockRegex.Match(cargoName);
+                if (customData == null || !name.ToLower().StartsWith("trade")) continue;
+
+                Match match = _cargoBlockRegex.Match(customData);
 
                 if (!match.Success) continue;
 
@@ -144,7 +143,8 @@ namespace EliteSuppe.Trade.Stations
             base.TakeSettingData(oldStationData);
 
             List<Item> currentGoods = Goods;
-            Goods = ((TradeStation) oldStationData).Goods;
+            TradeStation loadedData = (TradeStation) oldStationData;
+            Goods = loadedData.Goods;
             foreach (Item nowItem in Goods)
             {
                 foreach (Item beforeItem in currentGoods)
@@ -156,6 +156,9 @@ namespace EliteSuppe.Trade.Stations
                     break; // first out
                 }
             }
+
+            ProduceFrom = loadedData.ProduceFrom;
+            ReduceFrom = loadedData.ReduceFrom;
         }
     }
 }

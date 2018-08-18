@@ -37,6 +37,7 @@
             <e p="Output" t="Include">
               <e p="DefaultOutput.cs" t="Include" />
               <e p="StationOutputFactory.cs" t="Include" />
+              <e p="TradeStationOutput.cs" t="Include" />
             </e>
             <e p="README.md" t="Include" />
             <e p="StationBase.cs" t="Include" />

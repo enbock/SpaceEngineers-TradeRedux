@@ -8,9 +8,10 @@ namespace EliteSuppe.Trade.Stations.Output
         {
             IOutputRepresentor outputRepresentor;
 
-            outputRepresentor = new DefaultOutput(station);
+            if (station is TradeStation) outputRepresentor = new TradeStationOutput(station);
+            else outputRepresentor = new DefaultOutput(station);
 
             return outputRepresentor;
         }
     }
-}    
+}

@@ -98,8 +98,8 @@ namespace EliteSuppe.Trade.Stations
             if (IsCreditLimitationEnabled(credit) && paymentAmount > credit.CurrentCargo)
             {
                 paymentAmount = credit.CargoSize;
-                itemCount = Math.Ceiling(paymentAmount / buyPrice);
             }
+            itemCount = Math.Ceiling(paymentAmount / buyPrice);
 
             var removedItemsCount =
                 Math.Floor(InventoryApi.RemoveFromInventory(cargoBlock, item.Definition, itemCount));

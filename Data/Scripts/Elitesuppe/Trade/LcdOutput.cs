@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using EliteSuppe.Trade.Stations;
 using EliteSuppe.Trade.Stations.Output;
@@ -44,55 +45,6 @@ namespace Elitesuppe.Trade
             Dictionary<string, StringBuilder> output = new Dictionary<string, StringBuilder>();
             IOutputRepresentor outputRepresentor = StationOutputFactory.CreateRepresentor(station);
             outputRepresentor.CreateOutput(output, cubeGrid);
-
-            /*
-            var buyBuilder = new StringBuilder();
-            var sellBuilder = new StringBuilder();
-            buyBuilder.AppendLine("StationName:" + Base.CustomName);
-            buyBuilder.AppendLine("");
-            //buyBuilder.AppendLine("StationType:" + Station.Type);
-            buyBuilder.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
-            buyBuilder.AppendLine("Buying: (actual cargo)");
-
-            sellBuilder.AppendLine("StationName:" + Base.CustomName);
-            sellBuilder.AppendLine("");
-            //sellBuilder.AppendLine("StationType:" + Station.Type);
-            sellBuilder.AppendLine("LastUpdate: " + DateTime.Now.ToString("HH.mm"));
-            sellBuilder.AppendLine("Selling: (actual cargo)");
-
-            if (station is TradeStation)
-            {
-                TradeStation tradeStation = (TradeStation) station;
-                var goodsSelling = tradeStation.Goods.Where(g => g.IsSell);
-                foreach (var tradeItem in goodsSelling)
-                {
-                    sellBuilder.AppendLine(
-                        tradeItem +
-                        ": " +
-                        (tradeItem.Price.GetSellPrice(tradeItem.CargoRatio)).ToString("0.00##") +
-                        "$ (" +
-                        (tradeItem.CargoRatio * 100).ToString("0.#") +
-                        "% = " +
-                        GetStringFromDouble(tradeItem.CurrentCargo) +
-                        ")"
-                    );
-                }
-
-                var goodsBuying = tradeStation.Goods.Where(g => g.IsBuy);
-                foreach (var tradeItem in goodsBuying)
-                {
-                    buyBuilder.AppendLine(
-                        tradeItem +
-                        ": " +
-                        (tradeItem.Price.GetBuyPrice(tradeItem.CargoRatio)).ToString("0.00##") +
-                        "$ (" +
-                        (tradeItem.CargoRatio * 100).ToString("0.#") +
-                        "% = " +
-                        GetStringFromDouble(tradeItem.CurrentCargo) +
-                        ")"
-                    );
-                }
-            }*/
             
             foreach (var lcd in textPanels)
             {
@@ -101,17 +53,16 @@ namespace Elitesuppe.Trade
                 if (myLcd == null) continue;
                 var title = myLcd.GetPublicTitle().ToLower();
 
-                if (!title.Contains("info")) continue;
+                if (title.IndexOf("info", StringComparison.Ordinal) != 0) continue;
 
                 foreach (KeyValuePair<string, StringBuilder> pair in output)
                 {
                     string lcdTextInfo = "";
 
-                    if (title.Contains(pair.Key.ToLower()))
-                    {
-                        lcdTextInfo = pair.Value.ToString();
-                    }
+                    if (!title.Contains(pair.Key.ToLower())) continue;
 
+                    lcdTextInfo = pair.Value.ToString();
+    
                     if (lcdTextInfo == myLcd.GetPublicText()) continue;
                     
                     myLcd.WritePublicText(lcdTextInfo);

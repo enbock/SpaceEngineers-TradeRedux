@@ -123,8 +123,7 @@ namespace Elitesuppe
                 List<IMySlimBlock> cargoBlockList = new List<IMySlimBlock>();
                 grid.GetBlocks(
                     cargoBlockList,
-                    e => e != null &&
-                         e.FatBlock != null &&
+                    e => e?.FatBlock != null &&
                          e.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_CargoContainer)
                 );
 
@@ -257,7 +256,7 @@ namespace Elitesuppe
         {
             return;
             string line = text; //Logger.Log(text);
-            MyAPIGateway.Utilities.ShowMessage("TE-Log", line);
+            MyAPIGateway.Utilities.ShowMessage("TR-Log", line);
 
             if (LcdPanel == null) return;
 

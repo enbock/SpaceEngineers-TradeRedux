@@ -87,7 +87,7 @@ namespace Elitesuppe.Trade
                     }
                     catch (Exception e)
                     {
-                        //MyAPIGateway.Utilities.ShowMessage("TE", "exception: "+e.Message);
+                        //MyAPIGateway.Utilities.ShowMessage("TR", "exception: "+e.Message);
                         SendToClient(
                             new ServerMessage {Method = MethodType.MethodChatMessage, Message = e.Message},
                             message.SendingPlayer
@@ -97,7 +97,7 @@ namespace Elitesuppe.Trade
 
                     break;
                 case MethodType.MethodSpawnPrefab:
-                    //MyAPIGateway.Utilities.ShowMessage("TE", "Spawn Prefab requested:"+message.Message);
+                    //MyAPIGateway.Utilities.ShowMessage("TR", "Spawn Prefab requested:"+message.Message);
                     break;
             }
         }
