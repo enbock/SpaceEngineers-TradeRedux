@@ -61,7 +61,7 @@ namespace EliteSuppe.Trade.Stations.Output
             string formattedPerItem = (Math.Abs(perItem - 1f) > 0 ? $"per {perItem:0.#} " : "");
             double stock = tradeItem.CargoRatio * 100;
 
-            return $"{tradeItem}: {price:0.00##}{Definitions.CreditSymbol} {formattedPerItem}(Stock: {stock:0.#}%)";
+            return $"{tradeItem}: {price:0.##}{Definitions.CreditSymbol} {formattedPerItem}(Stock: {stock:0.#}%)";
         }
     }
 }
