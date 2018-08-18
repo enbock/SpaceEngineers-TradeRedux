@@ -16,10 +16,12 @@
             <e p="TradeEngineersException.cs" t="Include" />
             <e p="UnknownItemException.cs" t="Include" />
           </e>
+          <e p="GridApi.cs" t="Include" />
           <e p="Inventory" t="Include">
             <e p="InventoryApi.cs" t="Include" />
             <e p="ItemDefinitionFactory.cs" t="Include" />
           </e>
+          <e p="IOutputRepresentor.cs" t="Include" />
           <e p="Items" t="Include">
             <e p="Item.cs" t="Include" />
             <e p="Price.cs" t="Include" />
@@ -32,6 +34,10 @@
             <e p="FactoryStation.cs" t="Include" />
             <e p="IronForge.cs" t="Include" />
             <e p="MiningStation.cs" t="Include" />
+            <e p="Output" t="Include">
+              <e p="DefaultOutput.cs" t="Include" />
+              <e p="StationOutputFactory.cs" t="Include" />
+            </e>
             <e p="README.md" t="Include" />
             <e p="StationBase.cs" t="Include" />
             <e p="TradeStation.cs" t="Include" />
