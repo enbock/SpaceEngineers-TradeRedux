@@ -73,6 +73,7 @@ namespace EliteSuppe.Trade.Items
         {
             get { return Definition.ToString(); }
 
+            // Used for XML to Object encoding
             set
             {
                 try
@@ -108,6 +109,15 @@ namespace EliteSuppe.Trade.Items
         public override string ToString()
         {
             return ItemDefinitionFactory.DefinitionToString(Definition);
+        }
+        
+        public Item Clone()
+        {
+            Item copy = this.MemberwiseClone() as Item;
+            // ReSharper disable once PossibleNullReferenceException
+            copy.Price = Price.Clone();
+
+            return copy;
         }
     }
 }

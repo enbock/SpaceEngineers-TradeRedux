@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using Elitesuppe.Trade;
 using Elitesuppe.Trade.Exceptions;
 using Elitesuppe.Trade.Inventory;
 using EliteSuppe.Trade.Items;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.ModAPI;
 
@@ -16,6 +19,7 @@ namespace EliteSuppe.Trade.Stations
     {
         public string Type { get; } = "StationBaseType";
         public long OwnerId { get; } = 0;
+        public abstract List<Item> Goods { get; }
 
         protected StationBase()
         {
@@ -44,26 +48,70 @@ namespace EliteSuppe.Trade.Stations
             throw new ArgumentException("Station Block name did not match a station kind");
         }
 
-        public virtual void HandleProdCycle()
-        {
-        }
+        public abstract void HandleProdCycle();
+
+
+        protected readonly Regex CargoBlockRegex = new Regex(
+            @"\((\w+):?([\w\s\\\/]*)\)",
+            RegexOptions.Compiled & RegexOptions.IgnoreCase
+        );
 
         public virtual void HandleCargo(IEnumerable<IMySlimBlock> cargoBlockList)
         {
-        }
-
-        public virtual void TakeSettingData(StationBase oldStationData)
-        {
-        }
-
-        public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item, Item credit = null)
-        {
-            if (credit == null)
+            foreach (IMySlimBlock block in cargoBlockList)
             {
-                credit = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
-            }
+                IMyTerminalBlock cargoBlock = block.FatBlock as IMyTerminalBlock;
 
-            MyDefinitionId creditDefinition = credit.Definition;
+                if (cargoBlock == null) continue;
+
+                string name = cargoBlock.CustomName ?? cargoBlock.CustomNameWithFaction;
+                string customData = cargoBlock.CustomData;
+
+                if (customData == null || !name.ToLower().StartsWith("trade")) continue;
+
+                Match match = CargoBlockRegex.Match(customData);
+
+                if (!match.Success) continue;
+
+                var action = match.Groups[1].Value;
+                var item = match.Groups[2].Value;
+                if (action.Equals("buy"))
+                {
+                    foreach (var tradeItem in Goods.Where(g => g.IsBuy))
+                    {
+                        HandleBuySequenceOnCargo(cargoBlock, tradeItem);
+                    }
+                }
+                else if (action.Equals("sell"))
+                {
+                    try
+                    {
+                        var itemDefinition = ItemDefinitionFactory.DefinitionFromString(item);
+                        foreach (Item tradeItem in Goods.Where(g => g.IsSell))
+                        {
+                            if (tradeItem.Definition != itemDefinition) continue;
+                            HandleSellSequenceOnCargo(cargoBlock, tradeItem);
+                        }
+                    }
+                    catch (UnknownItemException exception)
+                    {
+                        MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
+                    }
+                }
+            }
+        }
+
+        public abstract void TakeSettingData(StationBase oldStationData);
+
+        public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
+        {
+            Item credits = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
+            HandleBuySequenceOnCargo(cargoBlock, item, credits);
+        }
+
+        public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item, Item credits)
+        {
+            MyDefinitionId creditDefinition = credits.Definition;
 
             double availableCount = InventoryApi.CountItemsInventory(cargoBlock, item.Definition);
             if (availableCount <= 0) return;
@@ -95,10 +143,11 @@ namespace EliteSuppe.Trade.Stations
             }
 
             double paymentAmount = Math.Floor(buyPrice * itemCount);
-            if (IsCreditLimitationEnabled(credit) && paymentAmount > credit.CurrentCargo)
+            if (IsCreditLimitationEnabled(credits) && paymentAmount > credits.CurrentCargo)
             {
-                paymentAmount = credit.CargoSize;
+                paymentAmount = credits.CargoSize;
             }
+
             itemCount = Math.Ceiling(paymentAmount / buyPrice);
 
             var removedItemsCount =
@@ -121,9 +170,9 @@ namespace EliteSuppe.Trade.Stations
                     return;
                 }
 
-                if (IsCreditLimitationEnabled(credit))
+                if (IsCreditLimitationEnabled(credits))
                 {
-                    credit.CurrentCargo -= givenCredits;
+                    credits.CurrentCargo -= givenCredits;
                 }
             }
             catch (UnknownItemException)
@@ -132,13 +181,14 @@ namespace EliteSuppe.Trade.Stations
             }
         }
 
-        public virtual void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item, Item credit = null)
+        public virtual void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
-            if (credit == null)
-            {
-                credit = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
-            }
-
+            Item credits = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
+            HandleSellSequenceOnCargo(cargoBlock, item, credits);
+        }
+        
+        public virtual void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item, Item credit)
+        {
             MyDefinitionId creditDefinition = credit.Definition;
 
             double sellPrice = item.Price.GetSellPrice(item.CargoRatio);

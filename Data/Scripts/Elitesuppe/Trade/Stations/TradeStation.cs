@@ -1,24 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 using Elitesuppe.Trade;
-using Elitesuppe.Trade.Exceptions;
-using Elitesuppe.Trade.Inventory;
 using EliteSuppe.Trade.Items;
-using Sandbox.ModAPI;
-using VRage.Game;
-using VRage.Game.ModAPI;
 
 namespace EliteSuppe.Trade.Stations
 {
     [Serializable]
-    [System.Xml.Serialization.XmlRoot(Namespace = Definitions.Version)]
+    [XmlRoot(Namespace = Definitions.Version)]
     public class TradeStation : StationBase
     {
         public double ProduceFrom = 0.25f;
         public double ReduceFrom = 0.75f;
-        public List<Item> Goods = new List<Item>();
+        private List<Item> _goods = new List<Item>();
+
+        public override List<Item> Goods
+        {
+            get { return _goods; }
+        }
+
         public const string StationType = "Elitesuppe_TradeRedux_TradeStation";
 
         public TradeStation()
@@ -27,7 +28,7 @@ namespace EliteSuppe.Trade.Stations
 
         public TradeStation(long ownerId) : base(ownerId, StationType)
         {
-            Goods = new List<Item>
+            _goods = new List<Item>
             {
                 new Item("MyObjectBuilder_Ingot/Platinum", new Price(0.07f), false, true, 100000f, 0),
                 new Item("MyObjectBuilder_Ingot/Gold", new Price(0.03f), false, true, 100000f, 0),
@@ -40,57 +41,6 @@ namespace EliteSuppe.Trade.Stations
                 //new Item("MyObjectBuilder_Ingot/Iron", new Price(0.000014f), false, true, 100000f, 0),
                 new Item("MyObjectBuilder_Component/SpaceCoin", new Price(100f), true, false, 10000f, 0)
             };
-        }
-
-
-        private readonly Regex _cargoBlockRegex = new Regex(
-            @"\((\w+):?([\w\s\\\/]*)\)",
-            RegexOptions.Compiled & RegexOptions.IgnoreCase
-        );
-
-        public override void HandleCargo(IEnumerable<IMySlimBlock> cargoBlockList)
-        {
-            foreach (IMySlimBlock block in cargoBlockList)
-            {
-                IMyTerminalBlock cargoBlock = block.FatBlock as IMyTerminalBlock;
-
-                if(cargoBlock == null) continue;
-
-                string name = cargoBlock.CustomName ?? cargoBlock.CustomNameWithFaction;
-                string customData = cargoBlock.CustomData;
-
-                if (customData == null || !name.ToLower().StartsWith("trade")) continue;
-
-                Match match = _cargoBlockRegex.Match(customData);
-
-                if (!match.Success) continue;
-
-                var action = match.Groups[1].Value;
-                var item = match.Groups[2].Value;
-                if (action.Equals("buy"))
-                {
-                    foreach (var tradeItem in Goods.Where(g => g.IsBuy))
-                    {
-                        HandleBuySequenceOnCargo(cargoBlock, tradeItem);
-                    }
-                }
-                else if (action.Equals("sell"))
-                {
-                    try
-                    {
-                        var itemDefinition = ItemDefinitionFactory.DefinitionFromString(item);
-                        foreach (Item tradeItem in Goods.Where(g => g.IsSell))
-                        {
-                            if (tradeItem.Definition != itemDefinition) continue;
-                            HandleSellSequenceOnCargo(cargoBlock, tradeItem);
-                        }
-                    }
-                    catch (UnknownItemException exception)
-                    {
-                        MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
-                    }
-                }
-            }
         }
 
         public override void HandleProdCycle()
@@ -122,29 +72,15 @@ namespace EliteSuppe.Trade.Stations
                 if (newCargo < 0f) newCargo = 0f;
 
                 tradeItem.CurrentCargo = newCargo;
-
-                /*
-                MyAPIGateway.Utilities.ShowMessage(
-                    "HandleProdCycle",
-                    tradeItem.Definition +
-                    "s: " +
-                    itemCount.ToString("0.#####") +
-                    "/" +
-                    tradeItem.CargoRatio.ToString("0.###") +
-                    "/" +
-                    tradeItem.CurrentCargo
-                );
-                */
             }
         }
 
         public override void TakeSettingData(StationBase oldStationData)
         {
-            base.TakeSettingData(oldStationData);
-
-            List<Item> currentGoods = Goods;
             TradeStation loadedData = (TradeStation) oldStationData;
-            Goods = loadedData.Goods;
+            List<Item> currentGoods = _goods;
+            _goods = loadedData._goods;
+            
             foreach (Item nowItem in Goods)
             {
                 foreach (Item beforeItem in currentGoods)

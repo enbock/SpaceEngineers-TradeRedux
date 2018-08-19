@@ -46,5 +46,10 @@ namespace EliteSuppe.Trade.Items
         {
             return Amount + ";" + MinPercent + ";" + MaxPercent;
         }
+
+        public Price Clone()
+        {
+            return MemberwiseClone() as Price;
+        }
     }
 }
