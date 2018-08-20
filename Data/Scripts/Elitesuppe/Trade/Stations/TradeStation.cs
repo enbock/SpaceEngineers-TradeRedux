@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml.Serialization;
 using Elitesuppe.Trade;
 using EliteSuppe.Trade.Items;
+using VRage.Game.ModAPI;
 
 namespace EliteSuppe.Trade.Stations
 {

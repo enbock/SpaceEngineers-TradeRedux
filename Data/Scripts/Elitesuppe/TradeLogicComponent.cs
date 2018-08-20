@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Elitesuppe.Trade;
 using EliteSuppe.Trade.Stations;
 using Sandbox.Common.ObjectBuilders;
@@ -25,7 +26,6 @@ namespace Elitesuppe
     public class TradeLogicComponent : MyGameLogicComponent
     {
         private MyObjectBuilder_EntityBase _objectBuilder;
-        private DateTime _displayUpdateTime = DateTime.MinValue;
         private DateTime _lastProductionUpdate = DateTime.MinValue;
 
         public IMyTextPanel LcdPanel;
@@ -39,7 +39,6 @@ namespace Elitesuppe
                 Save(Station);
 
             LcdPanel = null;
-            // Logger.Close();
         }
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
@@ -86,52 +85,35 @@ namespace Elitesuppe
                 if (Station != null) StationManager.Register(this);
             }
 
-            //Wenn nicht Defekt und Energie 
+            // if no energy do nothing
             if (!LcdPanel.IsFunctional || !LcdPanel.IsWorking || !LcdPanel.Enabled || Station == null) return;
-            const int productionTime = 10;
+            
+            const double refreshTime = 1f;
             try
             {
-                if (DateTime.Now.Subtract(_lastSaved).TotalSeconds > 30) // Save Trade Station Object every 5 min or so
-                {
-                    Save(Station);
-                }
+                if (DateTime.Now.Subtract(_lastSaved).TotalSeconds > 30f) Save(Station);
 
-                if ((DateTime.Now - _displayUpdateTime) > TimeSpan.FromMilliseconds(1000))
-                {
-                    /*
-                        if (!string.IsNullOrWhiteSpace(myLcd.CustomName) && myLcd.CustomName.StartsWith("SETUP:"))
-                            Station.SetupStation(myLcd, true);//second param: color
+                if (DateTime.Now.Subtract(_lastProductionUpdate).TotalSeconds < refreshTime) return;
+                
+                Station.HandleProdCycle();
+                _lastProductionUpdate = DateTime.Now;
+                LcdOutput.UpdateLcdOutput(LcdPanel, Station);
 
-                        if (!string.IsNullOrWhiteSpace(myLcd.GetPublicTitle()) && myLcd.GetPublicTitle().StartsWith("SETUP:"))
-                            Station.SetupStation(myLcd, true);//second param: color
-                        */
-                    _displayUpdateTime = DateTime.Now;
-
-                    LcdOutput.UpdateLcdOutput(LcdPanel, Station, true);
-                }
-
-                //Production Update alle 1Mins
-                if ((DateTime.Now - _lastProductionUpdate) > TimeSpan.FromSeconds(productionTime))
-                {
-                    Station.HandleProdCycle();
-                    _lastProductionUpdate = DateTime.Now;
-                }
-
-                //MyAPIGateway.Utilities.ShowMessage("Last Prod", (DateTime.Now - ProdCycleUpdateTime).TotalSeconds.ToString());
                 IMyCubeGrid grid = (IMyCubeGrid) LcdPanel.GetTopMostParent();
                 if (grid == null) return;
                 List<IMySlimBlock> cargoBlockList = new List<IMySlimBlock>();
                 grid.GetBlocks(
                     cargoBlockList,
-                    e => e?.FatBlock != null &&
-                         e.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_CargoContainer)
+                    slimBlock => slimBlock?.FatBlock != null
+                         && slimBlock.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_CargoContainer)
+                         && LcdPanel.CubeGrid.EntityId == slimBlock.FatBlock.CubeGrid.EntityId // only station container
                 );
 
                 Station.HandleCargo(cargoBlockList);
             }
             catch (Exception ex)
             {
-                Log("Update Error:" + ex.Message);
+                MyAPIGateway.Utilities.ShowNotification($"Error: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -227,15 +209,8 @@ namespace Elitesuppe
         {
             _lastSaved = DateTime.Now;
 
-            if (station == null)
-            {
-                return;
-            }
-
-            if (LcdPanel == null)
-            {
-                return;
-            }
+            if (station == null) return;
+            if (LcdPanel == null) return;
 
             try
             {

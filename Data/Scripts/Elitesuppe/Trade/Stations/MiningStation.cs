@@ -23,8 +23,8 @@ namespace EliteSuppe.Trade.Stations
                 new Recipe(
                     new List<Item>
                     {
-                        new Item("MyObjectBuilder_Ingot/Uranium", new Price(32f), 1, 0, 100000, 50),
-                        new Item("MyObjectBuilder_Ore/Ice", new Price(12f), 1, 0, 250000, 50)
+                        new Item("MyObjectBuilder_Ingot/Uranium", new Price(32f), 8, 0, 100000, 50),
+                        new Item("MyObjectBuilder_Ore/Ice", new Price(12f), 800, 0, 250000, 50)
                     },
                     new List<Item>
                     {

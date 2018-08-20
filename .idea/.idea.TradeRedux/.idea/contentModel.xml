@@ -36,6 +36,7 @@
             <e p="MiningStation.cs" t="Include" />
             <e p="Output" t="Include">
               <e p="DefaultOutput.cs" t="Include" />
+              <e p="FactoryStationOutput.cs" t="Include" />
               <e p="StationOutputFactory.cs" t="Include" />
               <e p="TradeStationOutput.cs" t="Include" />
             </e>

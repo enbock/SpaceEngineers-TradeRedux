@@ -24,12 +24,12 @@ namespace EliteSuppe.Trade.Items
 
         public double GetBuyPrice(double cargoVolumePercent = 0.5f)
         {
-            return CalculatePrice(cargoVolumePercent);
+            return Math.Floor(CalculatePrice(cargoVolumePercent));
         }
 
         public double GetSellPrice(double cargoVolumePercent = 0.5)
         {
-            return CalculatePrice(cargoVolumePercent);
+            return Math.Ceiling(CalculatePrice(cargoVolumePercent));
         }
 
         protected double CalculatePrice(double currentCargo = 0.5f)

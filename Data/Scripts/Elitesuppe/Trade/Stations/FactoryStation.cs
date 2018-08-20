@@ -13,7 +13,7 @@ namespace EliteSuppe.Trade.Stations
     {
         public List<Recipe> Recipes = new List<Recipe>();
         public Item Credits = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
-        
+
         private Dictionary<string, Item> _bufferStock = new Dictionary<string, Item>();
         private Dictionary<string, Item> _resourceStock = new Dictionary<string, Item>();
         private Dictionary<string, Item> _productStock = new Dictionary<string, Item>();
@@ -23,12 +23,25 @@ namespace EliteSuppe.Trade.Stations
             get
             {
                 List<Item> all = new List<Item>();
-                all.AddRange(_bufferStock.Values);
-                all.AddRange(_resourceStock.Values);
-                all.AddRange(_productStock.Values);
+                all.AddRange(BufferStock);
+                all.AddRange(ResourceStock);
+                all.AddRange(ProductStock);
 
                 return all;
             }
+        }
+
+        public IEnumerable<Item> BufferStock
+        {
+            get { return _bufferStock.Values; }
+        }
+        public IEnumerable<Item> ResourceStock
+        {
+            get { return _resourceStock.Values; }
+        }
+        public IEnumerable<Item> ProductStock
+        {
+            get { return _productStock.Values; }
         }
 
         public FactoryStation()
@@ -41,14 +54,34 @@ namespace EliteSuppe.Trade.Stations
 
         public override void HandleProdCycle()
         {
-            // NotImplemented
+            foreach (Recipe recipe in Recipes)
+            {
+                if (recipe.IsProducing) continue;
+                if (!ResourcesOnStock(recipe.RequiredGoods)) continue;
+                ReduceResourcesStock(recipe.RequiredGoods);
+                recipe.IsProducing = true;
+                recipe.ProducingStartedAt = DateTime.Now;
+            }
+
+            foreach (Recipe recipe in Recipes)
+            {
+                if (recipe.IsProducing == false) continue;
+                if (!ResourcesOnStock(recipe.RequiredGoods)) continue;
+                double producingTime = DateTime.Now.Subtract(recipe.ProducingStartedAt).TotalSeconds;
+                if (producingTime < recipe.ProductionTimeInSeconds) continue;
+
+                if (!OutputStockAvailable(recipe.ProducingGoods)) return;
+                AddRecipeToStock(recipe.ProducingGoods);
+                recipe.IsProducing = false;
+                recipe.ProducingStartedAt = DateTime.MinValue;
+            }
         }
 
         public override void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
             HandleBuySequenceOnCargo(cargoBlock, item, Credits);
         }
-        
+
         public override void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
             HandleSellSequenceOnCargo(cargoBlock, item, Credits);
@@ -58,16 +91,125 @@ namespace EliteSuppe.Trade.Stations
         {
             FactoryStation loadedData = oldStationData as FactoryStation;
 
-            if (loadedData == null) return;
-
-            if (loadedData.Credits.SerializedDefinition != Credits.SerializedDefinition)
+            if (loadedData != null)
             {
-                Credits = loadedData.Credits;
+                if (loadedData.Credits.SerializedDefinition != Credits.SerializedDefinition)
+                {
+                    Credits = loadedData.Credits;
+                }
+
+                Recipes = loadedData.Recipes;
             }
 
-            Recipes = loadedData.Recipes;
-
             RefreshStock();
+        }
+
+        private void AddRecipeToStock(IEnumerable<Item> producingGoods)
+        {
+            foreach (Item good in producingGoods)
+            {
+                string definition = good.SerializedDefinition;
+                double itemsToStock = good.Result;
+
+                if (_bufferStock.ContainsKey(definition))
+                    itemsToStock = AddProductToStock(_bufferStock[definition], itemsToStock);
+                if (_productStock.ContainsKey(definition)) AddProductToStock(_productStock[definition], itemsToStock);
+            }
+        }
+
+        private double AddProductToStock(Item stock, double amount)
+        {
+            double available = stock.CargoSize - stock.CurrentCargo;
+            if (available < amount)
+            {
+                amount -= available;
+                stock.CurrentCargo = stock.CargoSize;
+            }
+            else
+            {
+                stock.CurrentCargo += amount;
+                amount = 0;
+            }
+
+            return amount;
+        }
+
+        private bool OutputStockAvailable(IEnumerable<Item> producingGoods)
+        {
+            foreach (Item good in producingGoods)
+            {
+                string definition = good.SerializedDefinition;
+                double stockAvailable = 0;
+
+                if (_bufferStock.ContainsKey(definition))
+                {
+                    Item stock = _bufferStock[definition];
+                    stockAvailable += stock.CargoSize - stock.CurrentCargo;
+                }
+
+                if (_productStock.ContainsKey(definition))
+                {
+                    Item stock = _productStock[definition];
+                    stockAvailable += stock.CargoSize - stock.CurrentCargo;
+                }
+
+                if (stockAvailable >= good.Result) return false;
+            }
+
+            return true;
+        }
+
+        private void ReduceResourcesStock(IEnumerable<Item> requiredGoods)
+        {
+            foreach (Item good in requiredGoods)
+            {
+                string definition = good.SerializedDefinition;
+                double neededItems = good.Required;
+
+                if (_bufferStock.ContainsKey(definition))
+                    neededItems = ReduceStock(_bufferStock[definition], neededItems);
+                if (_resourceStock.ContainsKey(definition))
+                    ReduceStock(_resourceStock[definition], neededItems);
+            }
+        }
+
+        private static double ReduceStock(Item stock, double amount)
+        {
+            if (stock.CurrentCargo < amount)
+            {
+                amount -= stock.CurrentCargo;
+                stock.CurrentCargo = 0;
+            }
+            else
+            {
+                stock.CurrentCargo -= amount;
+                amount = 0;
+            }
+
+            return amount;
+        }
+
+        private bool ResourcesOnStock(IEnumerable<Item> requiredGoods)
+        {
+            foreach (Item good in requiredGoods)
+            {
+                string definition = good.SerializedDefinition;
+                double availableItems = 0;
+
+                if (_bufferStock.ContainsKey(definition))
+                {
+                    availableItems += _bufferStock[definition].CurrentCargo;
+                }
+
+                if (_resourceStock.ContainsKey(definition))
+                {
+                    availableItems += _resourceStock[definition].CurrentCargo;
+                }
+
+                if (availableItems < good.Required) return false;
+            }
+
+            return true;
         }
 
         private void RefreshStock()
@@ -160,9 +302,12 @@ namespace EliteSuppe.Trade.Stations
             {
                 Item stockItem = targetStock[serializedDefinition];
                 stockItem.CargoSize += requiredGood.CargoSize;
+
+                return;
             }
 
-            targetStock.Add(serializedDefinition, requiredGood.Clone());
+            Item clone = requiredGood.Clone();
+            targetStock.Add(serializedDefinition, clone);
         }
     }
 }

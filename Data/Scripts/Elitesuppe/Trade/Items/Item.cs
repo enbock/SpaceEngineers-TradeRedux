@@ -53,8 +53,8 @@ namespace EliteSuppe.Trade.Items
                 CurrentCargo = currentCargo;
                 Required = required;
                 Result = result;
-                IsSell = false;
-                IsBuy = false;
+                IsSell = result > 0f;
+                IsBuy = required > 0f;
             }
             catch (UnknownItemException)
             {

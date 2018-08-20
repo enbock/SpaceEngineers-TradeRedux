@@ -35,17 +35,25 @@ namespace EliteSuppe.Trade.Stations
         {
             if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Station Block name was empty");
 
+            StationBase station;
+
             switch (blockName)
             {
                 case TradeStation.StationType:
-                    return new TradeStation(ownerId);
+                    station = new TradeStation(ownerId);
+                    break;
                 case IronForge.StationType:
-                    return new IronForge(ownerId);
+                    station = new IronForge(ownerId);
+                    break;
                 case MiningStation.StationType:
-                    return new MiningStation(ownerId);
+                    station = new MiningStation(ownerId);
+                    break;
+                default:
+                    throw new ArgumentException("Station Block name did not match a station kind");
             }
 
-            throw new ArgumentException("Station Block name did not match a station kind");
+            station.TakeSettingData(null);
+            return station;
         }
 
         public abstract void HandleProdCycle();
@@ -95,7 +103,7 @@ namespace EliteSuppe.Trade.Stations
                     }
                     catch (UnknownItemException exception)
                     {
-                        MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
+                        MyAPIGateway.Utilities.ShowNotification("Error: Wrong item: " + exception.Message);
                     }
                 }
             }
@@ -114,6 +122,7 @@ namespace EliteSuppe.Trade.Stations
             MyDefinitionId creditDefinition = credits.Definition;
 
             double availableCount = InventoryApi.CountItemsInventory(cargoBlock, item.Definition);
+
             if (availableCount <= 0) return;
 
             double itemCount = availableCount;
@@ -145,7 +154,7 @@ namespace EliteSuppe.Trade.Stations
             double paymentAmount = Math.Floor(buyPrice * itemCount);
             if (IsCreditLimitationEnabled(credits) && paymentAmount > credits.CurrentCargo)
             {
-                paymentAmount = credits.CargoSize;
+                paymentAmount = Math.Floor(credits.CurrentCargo);
             }
 
             itemCount = Math.Ceiling(paymentAmount / buyPrice);
@@ -160,7 +169,8 @@ namespace EliteSuppe.Trade.Stations
             item.CurrentCargo += removedItemsCount;
             try
             {
-                double givenCredits = InventoryApi.AddToInventory(cargoBlock, creditDefinition, paymentAmount);
+                double givenCredits =
+                    Math.Floor(InventoryApi.AddToInventory(cargoBlock, creditDefinition, paymentAmount));
 
                 if (givenCredits <= 0)
                 {
@@ -186,7 +196,7 @@ namespace EliteSuppe.Trade.Stations
             Item credits = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
             HandleSellSequenceOnCargo(cargoBlock, item, credits);
         }
-        
+
         public virtual void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item, Item credit)
         {
             MyDefinitionId creditDefinition = credit.Definition;

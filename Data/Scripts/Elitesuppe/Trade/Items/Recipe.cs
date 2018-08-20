@@ -8,17 +8,19 @@ namespace EliteSuppe.Trade.Items
     {
         public List<Item> RequiredGoods { get; } = new List<Item>();
         public List<Item> ProducingGoods { get; } = new List<Item>();
-        public double Time;
+        public double ProductionTimeInSeconds;
+        public bool IsProducing = false;
+        public DateTime ProducingStartedAt = DateTime.MinValue;
 
         public Recipe()
         {
         }
 
-        public Recipe(List<Item> requiredGoods, List<Item> producingGoods, double time = 1f)
+        public Recipe(List<Item> requiredGoods, List<Item> producingGoods, double productionTimeInSeconds = 1f)
         {
             RequiredGoods = requiredGoods;
             ProducingGoods = producingGoods;
-            Time = time;
+            ProductionTimeInSeconds = productionTimeInSeconds;
         }
     }
 }
