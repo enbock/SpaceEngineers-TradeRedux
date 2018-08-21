@@ -17,21 +17,19 @@ namespace EliteSuppe.Trade.Stations
     [XmlRoot(Namespace = Definitions.Version)]
     public abstract class StationBase
     {
-        public string Type { get; } = "StationBaseType";
-        public long OwnerId { get; } = 0;
+        public string Type = "StationBaseType";
         public abstract List<Item> Goods { get; }
 
         protected StationBase()
         {
         }
 
-        protected StationBase(long ownerId, string type)
+        protected StationBase(string type)
         {
-            OwnerId = ownerId;
             Type = type;
         }
 
-        public static StationBase Factory(string blockName, long ownerId)
+        public static StationBase Factory(string blockName)
         {
             if (string.IsNullOrWhiteSpace(blockName)) throw new ArgumentException("Station Block name was empty");
 
@@ -40,13 +38,13 @@ namespace EliteSuppe.Trade.Stations
             switch (blockName)
             {
                 case TradeStation.StationType:
-                    station = new TradeStation(ownerId);
+                    station = new TradeStation(true);
                     break;
                 case IronForge.StationType:
-                    station = new IronForge(ownerId);
+                    station = new IronForge(true);
                     break;
                 case MiningStation.StationType:
-                    station = new MiningStation(ownerId);
+                    station = new MiningStation(true);
                     break;
                 default:
                     throw new ArgumentException("Station Block name did not match a station kind");
@@ -85,9 +83,9 @@ namespace EliteSuppe.Trade.Stations
                 var item = match.Groups[2].Value;
                 if (action.Equals("buy"))
                 {
-                    foreach (var tradeItem in Goods.Where(g => g.IsBuy))
+                    foreach (var tradeItem in Goods.Where(g => g.IsPurchasing))
                     {
-                        HandleBuySequenceOnCargo(cargoBlock, tradeItem);
+                        HandlePurchaseSequenceOnCargo(cargoBlock, tradeItem);
                     }
                 }
                 else if (action.Equals("sell"))
@@ -95,7 +93,7 @@ namespace EliteSuppe.Trade.Stations
                     try
                     {
                         var itemDefinition = ItemDefinitionFactory.DefinitionFromString(item);
-                        foreach (Item tradeItem in Goods.Where(g => g.IsSell))
+                        foreach (Item tradeItem in Goods.Where(g => g.IsSelling))
                         {
                             if (tradeItem.Definition != itemDefinition) continue;
                             HandleSellSequenceOnCargo(cargoBlock, tradeItem);
@@ -111,13 +109,13 @@ namespace EliteSuppe.Trade.Stations
 
         public abstract void TakeSettingData(StationBase oldStationData);
 
-        public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
+        public virtual void HandlePurchaseSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
-            Item credits = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
-            HandleBuySequenceOnCargo(cargoBlock, item, credits);
+            Item credits = new Item(Definitions.Credits);
+            HandlePurchaseSequenceOnCargo(cargoBlock, item, credits);
         }
 
-        public virtual void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item, Item credits)
+        public virtual void HandlePurchaseSequenceOnCargo(IMyCubeBlock cargoBlock, Item item, Item credits)
         {
             MyDefinitionId creditDefinition = credits.Definition;
 
@@ -126,10 +124,10 @@ namespace EliteSuppe.Trade.Stations
             if (availableCount <= 0) return;
 
             double itemCount = availableCount;
-            double maximumItemsPerTransfer = Math.Ceiling(item.CargoSize * 0.01f);
-            var pricing = item.Price;
-            var buyPrice = pricing.GetBuyPrice(item.CargoRatio);
-            double minimumItemPerTransfer = Math.Ceiling(1f / buyPrice);
+            double maximumItemsPerTransfer = Math.Round(item.CargoSize * 0.01f);
+            Price pricing = item.PurchasePrice;
+            double purchasePrice = pricing.GetStockPrice(item.CargoRatio);
+            double minimumItemPerTransfer = Math.Ceiling(1f / purchasePrice);
             if (maximumItemsPerTransfer < minimumItemPerTransfer)
             {
                 maximumItemsPerTransfer = minimumItemPerTransfer;
@@ -142,7 +140,7 @@ namespace EliteSuppe.Trade.Stations
                 itemCount = item.CargoSize - item.CurrentCargo;
             }
 
-            itemCount = Math.Floor(itemCount);
+            itemCount = Math.Round(itemCount);
 
             if (itemCount < minimumItemPerTransfer)
             {
@@ -151,26 +149,25 @@ namespace EliteSuppe.Trade.Stations
                 itemCount = minimumItemPerTransfer;
             }
 
-            double paymentAmount = Math.Floor(buyPrice * itemCount);
+            double paymentAmount = Math.Ceiling(purchasePrice * itemCount);
             if (IsCreditLimitationEnabled(credits) && paymentAmount > credits.CurrentCargo)
             {
                 paymentAmount = Math.Floor(credits.CurrentCargo);
             }
 
-            itemCount = Math.Ceiling(paymentAmount / buyPrice);
+            itemCount = Math.Round(paymentAmount / purchasePrice);
 
             var removedItemsCount =
                 Math.Floor(InventoryApi.RemoveFromInventory(cargoBlock, item.Definition, itemCount));
             if (removedItemsCount <= 0) return;
 
             // could less items removed as expected
-            if (removedItemsCount < itemCount) paymentAmount = Math.Floor(buyPrice * removedItemsCount);
+            if (removedItemsCount < itemCount) paymentAmount = Math.Floor(purchasePrice * removedItemsCount);
 
             item.CurrentCargo += removedItemsCount;
             try
             {
-                double givenCredits =
-                    Math.Floor(InventoryApi.AddToInventory(cargoBlock, creditDefinition, paymentAmount));
+                double givenCredits = InventoryApi.AddToInventory(cargoBlock, creditDefinition, paymentAmount);
 
                 if (givenCredits <= 0)
                 {
@@ -193,7 +190,7 @@ namespace EliteSuppe.Trade.Stations
 
         public virtual void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
-            Item credits = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
+            Item credits = new Item(Definitions.Credits);
             HandleSellSequenceOnCargo(cargoBlock, item, credits);
         }
 
@@ -201,7 +198,7 @@ namespace EliteSuppe.Trade.Stations
         {
             MyDefinitionId creditDefinition = credit.Definition;
 
-            double sellPrice = item.Price.GetSellPrice(item.CargoRatio);
+            double sellPrice = item.SellPrice.GetStockPrice(item.CargoRatio);
             MyDefinitionId itemDefinition = item.Definition;
 
             double maximumItemsPerTransfer = Math.Round(item.CargoSize * 0.01f, 0); //1% of max
@@ -218,8 +215,6 @@ namespace EliteSuppe.Trade.Stations
             if (sellCount > item.CurrentCargo) sellCount = item.CurrentCargo;
 
             double paymentAmount = Math.Ceiling(sellPrice * sellCount);
-
-            if (paymentAmount > creditsInCargo) return;
 
             try
             {

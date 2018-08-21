@@ -5,31 +5,30 @@ namespace EliteSuppe.Trade.Items
     [Serializable]
     public class Price
     {
+        public double Amount = 0f;
+        public double MinPercent = 1f;
+        public double MaxPercent = 1f;
+        
         public Price()
         {
         }
 
-        public Price(double amount, double minPercent = 0.6f, double maxPercent = 1.4f)
+        public Price(double amount)
+        {
+            Amount = amount;
+        }
+
+        public Price(double amount, double minPercent, double maxPercent)
         {
             Amount = amount;
             MinPercent = minPercent;
             MaxPercent = maxPercent;
         }
 
-        public double Amount { get; set; } = 0;
 
-        public double MinPercent { get; set; } = 0.10f;
-
-        public double MaxPercent { get; set; } = 1.25f;
-
-        public double GetBuyPrice(double cargoVolumePercent = 0.5f)
+        public double GetStockPrice(double cargoVolumePercent = 0.5f)
         {
-            return Math.Floor(CalculatePrice(cargoVolumePercent));
-        }
-
-        public double GetSellPrice(double cargoVolumePercent = 0.5)
-        {
-            return Math.Ceiling(CalculatePrice(cargoVolumePercent));
+            return CalculatePrice(cargoVolumePercent);
         }
 
         protected double CalculatePrice(double currentCargo = 0.5f)

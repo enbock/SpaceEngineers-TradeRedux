@@ -4,7 +4,6 @@ using System.Linq;
 using System.Xml.Serialization;
 using Elitesuppe.Trade;
 using EliteSuppe.Trade.Items;
-using VRage.Game.ModAPI;
 
 namespace EliteSuppe.Trade.Stations
 {
@@ -23,24 +22,25 @@ namespace EliteSuppe.Trade.Stations
 
         public const string StationType = "Elitesuppe_TradeRedux_TradeStation";
 
-        public TradeStation()
+        public TradeStation() : base(StationType)
         {
         }
 
-        public TradeStation(long ownerId) : base(ownerId, StationType)
+        public TradeStation(bool init = false) : base(StationType)
         {
+            if (!init) return; // deserialization created
+            
             _goods = new List<Item>
             {
-                new Item("MyObjectBuilder_Ingot/Platinum", new Price(0.07f), false, true, 100000f, 0),
-                new Item("MyObjectBuilder_Ingot/Gold", new Price(0.03f), false, true, 100000f, 0),
-                new Item("MyObjectBuilder_Ingot/Uranium", new Price(0.02f), false, true, 100000f, 0),
-                new Item("MyObjectBuilder_Ingot/Silver", new Price(0.003f), false, true, 100000f, 0),
-                new Item("MyObjectBuilder_Ingot/Magnesium", new Price(0.03f), false, true, 100000f, 0),
-                new Item("MyObjectBuilder_Ingot/Silicon", new Price(0.00044f), false, true, 100000f, 0),
-                new Item("MyObjectBuilder_Ingot/Nickel", new Price(0.00084f), false, true, 100000f, 0),
-                new Item("MyObjectBuilder_Ingot/Cobalt", new Price(0.001f), false, true, 100000f, 0),
-                //new Item("MyObjectBuilder_Ingot/Iron", new Price(0.000014f), false, true, 100000f, 0),
-                new Item("MyObjectBuilder_Component/SpaceCoin", new Price(100f), true, false, 10000f, 0)
+                new Item("Ingot/Platinum", new Price(0.07f, 0.5f, 1.5f), new Price(), 100000f, 0f),
+                new Item("Ingot/Gold", new Price(0.03f, 0.5f, 1.5f), new Price(), 100000f, 0f),
+                new Item("Ingot/Uranium", new Price(0.02f, 0.5f, 1.5f), new Price(), 100000f, 0f),
+                new Item("Ingot/Silver", new Price(0.003f, 0.5f, 1.5f), new Price(), 100000f, 0f),
+                new Item("Ingot/Magnesium", new Price(0.03f, 0.5f, 1.5f), new Price(), 100000f, 0f),
+                new Item("Ingot/Silicon", new Price(0.00044f, 0.5f, 1.5f), new Price(), 100000f, 0f),
+                new Item("Ingot/Nickel", new Price(0.00084f, 0.5f, 1.5f), new Price(), 100000f, 0f),
+                new Item("Ingot/Cobalt", new Price(0.001f, 0.5f, 1.5f), new Price(), 100000f, 0),
+                new Item("Component/SpaceCoin", new Price(0f), new Price(100f), 10000f, 0f)
             };
         }
 
@@ -65,7 +65,7 @@ namespace EliteSuppe.Trade.Stations
                     if (itemCount < 1f) itemCount = 1f;
                 }
 
-                itemCount = Math.Round(itemCount, 0);
+                itemCount = Math.Round(itemCount);
 
                 double newCargo = itemCount + tradeItem.CurrentCargo;
 
@@ -81,7 +81,7 @@ namespace EliteSuppe.Trade.Stations
             TradeStation loadedData = (TradeStation) oldStationData;
             List<Item> currentGoods = _goods;
             _goods = loadedData._goods;
-            
+
             foreach (Item nowItem in Goods)
             {
                 foreach (Item beforeItem in currentGoods)

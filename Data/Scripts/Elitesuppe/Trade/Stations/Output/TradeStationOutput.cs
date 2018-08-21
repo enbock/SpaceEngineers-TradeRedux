@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using EliteSuppe.Trade.Items;
-using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 
 namespace EliteSuppe.Trade.Stations.Output
@@ -18,36 +16,30 @@ namespace EliteSuppe.Trade.Stations.Output
             base.CreateOutput(output, grid);
 
             StringBuilder baseOutput = output["station"];
-            StringBuilder buyBuilder = CloneOutput(baseOutput);
+            StringBuilder purchaseBuilder = CloneOutput(baseOutput);
             StringBuilder sellBuilder = CloneOutput(baseOutput);
 
-            buyBuilder.AppendLine("Purchasing:");
+            purchaseBuilder.AppendLine("Purchasing:");
             sellBuilder.AppendLine("Selling:");
 
             List<Item> stationGoods = Station?.Goods;
-            if (stationGoods == null)
-            {
-                MyAPIGateway.Utilities.ShowMessage("TR-Log", "NO GOODS");
-                return;
-            }
+            if (stationGoods == null) return;
 
             foreach (var tradeItem in stationGoods)
             {
-
-                if (tradeItem.IsSell)
+                if (tradeItem.IsSelling)
                 {
-                    double sellPrice = tradeItem.Price.GetSellPrice(tradeItem.CargoRatio);
+                    double sellPrice = tradeItem.SellPrice.GetStockPrice(tradeItem.CargoRatio);
                     sellBuilder.AppendLine(FormatItem(tradeItem, sellPrice));
                 }
-                else if (tradeItem.IsBuy)
+                else if (tradeItem.IsPurchasing)
                 {
-                    double buyPrice = tradeItem.Price.GetBuyPrice(tradeItem.CargoRatio);
-                    buyBuilder.AppendLine(FormatItem(tradeItem, buyPrice));
+                    double buyPrice = tradeItem.PurchasePrice.GetStockPrice(tradeItem.CargoRatio);
+                    purchaseBuilder.AppendLine(FormatItem(tradeItem, buyPrice));
                 }
             }
 
-            output.Add("buy", buyBuilder);
-            output.Add("purchase", buyBuilder);
+            output.Add("purchase", purchaseBuilder);
             output.Add("sell", sellBuilder);
         }
 

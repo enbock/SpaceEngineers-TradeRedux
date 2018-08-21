@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using EliteSuppe.Trade.Items;
-using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 
 namespace EliteSuppe.Trade.Stations.Output
@@ -11,49 +11,45 @@ namespace EliteSuppe.Trade.Stations.Output
         public FactoryStationOutput(StationBase station) : base(station)
         {
         }
-        
+
         public override void CreateOutput(Dictionary<string, StringBuilder> output, IMyCubeGrid grid)
         {
             base.CreateOutput(output, grid);
-            
+
             FactoryStation station = Station as FactoryStation;
             if (station == null) return;
 
-            StringBuilder baseOutput = output["station"];
-            StringBuilder outputBuilder = CloneOutput(baseOutput);
-            StringBuilder purchaseBuilder = output["purchase"];
-            StringBuilder sellBuilder = output["sell"];
-            StringBuilder bufferBuilder = CloneOutput(baseOutput);
+            StringBuilder outputBuilder = CloneOutput(output["station"]);
+            StringBuilder progressBuilder = CloneOutput(output["station"]);
 
             outputBuilder.AppendLine("Purchasing:");
-            foreach (Item item in station.ResourceStock)
+            foreach (Item item in station.Stock.Where(i => i.IsPurchasing))
             {
-                string line = FormatItem(item, item.Price.GetBuyPrice(item.CargoRatio));
+                string line = FormatItem(item, item.PurchasePrice.GetStockPrice(item.CargoRatio));
                 outputBuilder.AppendLine(line);
-                purchaseBuilder.AppendLine(line);
             }
-            
+
             outputBuilder.AppendLine();
             outputBuilder.AppendLine("Selling:");
-            foreach (Item item in station.ProductStock)
+            foreach (Item item in station.Stock.Where(i => i.IsSelling))
             {
-                string line = FormatItem(item, item.Price.GetBuyPrice(item.CargoRatio));
+                string line = FormatItem(item, item.SellPrice.GetStockPrice(item.CargoRatio));
                 outputBuilder.AppendLine(line);
-                sellBuilder.AppendLine(line);
             }
-            
+
+
             outputBuilder.AppendLine();
-            outputBuilder.AppendLine("Purchasing and selling:");
-            bufferBuilder.AppendLine("Purchasing and selling:");
-            foreach (Item item in station.BufferStock)
+            outputBuilder.AppendLine("Progress:");
+            progressBuilder.AppendLine("Progress:");
+            foreach (KeyValuePair<string, double> pair in station.Progress())
             {
-                string value = FormatItem(item, item.Price.GetBuyPrice(item.CargoRatio));
-                outputBuilder.AppendLine(value);
-                bufferBuilder.AppendLine(value);
+                string line = $"{pair.Key}: {pair.Value:0.##}%";
+                outputBuilder.AppendLine(line);
+                progressBuilder.AppendLine(line);
             }
 
             output.Add("factory", outputBuilder);
-            output.Add("buffer", bufferBuilder);
+            output.Add("progress", progressBuilder);
         }
     }
 }

@@ -12,7 +12,9 @@ namespace Elitesuppe.Trade.Inventory
         public static MyDefinitionId DefinitionFromString(string definition)
         {
             if (string.IsNullOrWhiteSpace(definition) || definition.Contains("(null)"))
-                throw new UnknownItemException("<Empty defition>");
+                throw new UnknownItemException("<Empty definition>");
+
+            definition = "MyObjectBuilder_" + definition;
 
             var input = definition.Trim();
             MyDefinitionId foundDefinitionId;
@@ -82,12 +84,10 @@ namespace Elitesuppe.Trade.Inventory
             }
 
             if (definition.TypeId != typeof(MyObjectBuilder_Component)) return name;
-            
+
             var blueprintDefinitionBase = MyDefinitionManager.Static.GetBlueprintDefinitions()
                 .FirstOrDefault(bp => bp.Results.First().Id.Equals(definition));
             return blueprintDefinitionBase != null ? blueprintDefinitionBase.DisplayNameText : name;
-
-
         }
 
         public static Dictionary<MyDefinitionId, double> GetRecipeInput(

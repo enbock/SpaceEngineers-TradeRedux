@@ -12,6 +12,20 @@ namespace EliteSuppe.Trade.Items
         public bool IsProducing = false;
         public DateTime ProducingStartedAt = DateTime.MinValue;
 
+        public string Name
+        {
+            get
+            {
+                string name = "";
+                foreach (Item good in ProducingGoods)
+                {
+                    name += good.SerializedDefinition;
+                }
+
+                return name;
+            }
+        }
+
         public Recipe()
         {
         }

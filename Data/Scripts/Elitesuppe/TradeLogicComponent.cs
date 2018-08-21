@@ -87,14 +87,14 @@ namespace Elitesuppe
 
             // if no energy do nothing
             if (!LcdPanel.IsFunctional || !LcdPanel.IsWorking || !LcdPanel.Enabled || Station == null) return;
-            
+
             const double refreshTime = 1f;
             try
             {
-                if (DateTime.Now.Subtract(_lastSaved).TotalSeconds > 30f) Save(Station);
+                if (DateTime.Now.Subtract(_lastSaved).TotalSeconds > 10f) Save(Station);
 
                 if (DateTime.Now.Subtract(_lastProductionUpdate).TotalSeconds < refreshTime) return;
-                
+
                 Station.HandleProdCycle();
                 _lastProductionUpdate = DateTime.Now;
                 LcdOutput.UpdateLcdOutput(LcdPanel, Station);
@@ -104,9 +104,10 @@ namespace Elitesuppe
                 List<IMySlimBlock> cargoBlockList = new List<IMySlimBlock>();
                 grid.GetBlocks(
                     cargoBlockList,
-                    slimBlock => slimBlock?.FatBlock != null
-                         && slimBlock.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_CargoContainer)
-                         && LcdPanel.CubeGrid.EntityId == slimBlock.FatBlock.CubeGrid.EntityId // only station container
+                    slimBlock => slimBlock?.FatBlock != null &&
+                                 slimBlock.FatBlock.BlockDefinition.TypeId == typeof(MyObjectBuilder_CargoContainer) &&
+                                 LcdPanel.CubeGrid.EntityId ==
+                                 slimBlock.FatBlock.CubeGrid.EntityId // only station container
                 );
 
                 Station.HandleCargo(cargoBlockList);
@@ -192,13 +193,13 @@ namespace Elitesuppe
 
             try
             {
-                StationBase station = StationBase.Factory(LcdPanel.BlockDefinition.SubtypeId, LcdPanel.OwnerId);
-                Log("Found:" + station.Type);
+                StationBase station = StationBase.Factory(LcdPanel.BlockDefinition.SubtypeId); //, LcdPanel.OwnerId);
+                //Log("Found:" + station.Type);
                 return station;
             }
             catch (ArgumentException)
             {
-                Log("StationTypeError: Name the Block is not expected: " + LcdPanel.BlockDefinition.SubtypeId);
+                //Log("StationTypeError: Name the Block is not expected: " + LcdPanel.BlockDefinition.SubtypeId);
                 // just wait for correct name
             }
 
@@ -220,10 +221,9 @@ namespace Elitesuppe
                 LcdPanel.CustomData = MyAPIGateway.Utilities.SerializeToXML(Station);
                 Log("Station saved.");
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                //var grid = (LcdPanel.GetTopMostParent() as IMyCubeGrid);
-                //Log("ERROR serializing XML for '" + (grid.CustomName ?? grid.Name) + "': " + e.Message);
+                MyAPIGateway.Utilities.ShowNotification("Error: Saving data: " + exception.Message, 10000, "Red");
             }
         }
 

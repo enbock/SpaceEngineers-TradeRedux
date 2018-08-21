@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Serialization;
 using Elitesuppe.Trade;
 using EliteSuppe.Trade.Items;
@@ -12,43 +13,21 @@ namespace EliteSuppe.Trade.Stations
     public class FactoryStation : StationBase
     {
         public List<Recipe> Recipes = new List<Recipe>();
-        public Item Credits = new Item(Definitions.Credits, new Price(1f, 1f, 1f), true, true, 0f, 0f);
+        public Item Credits = new Item(Definitions.Credits);
 
-        private Dictionary<string, Item> _bufferStock = new Dictionary<string, Item>();
-        private Dictionary<string, Item> _resourceStock = new Dictionary<string, Item>();
-        private Dictionary<string, Item> _productStock = new Dictionary<string, Item>();
+        private Dictionary<string, Item> _stock = new Dictionary<string, Item>();
 
         public override List<Item> Goods
         {
-            get
-            {
-                List<Item> all = new List<Item>();
-                all.AddRange(BufferStock);
-                all.AddRange(ResourceStock);
-                all.AddRange(ProductStock);
-
-                return all;
-            }
+            get { return new List<Item>(_stock.Values); }
         }
 
-        public IEnumerable<Item> BufferStock
+        public IEnumerable<Item> Stock
         {
-            get { return _bufferStock.Values; }
-        }
-        public IEnumerable<Item> ResourceStock
-        {
-            get { return _resourceStock.Values; }
-        }
-        public IEnumerable<Item> ProductStock
-        {
-            get { return _productStock.Values; }
+            get { return _stock.Values; }
         }
 
-        public FactoryStation()
-        {
-        }
-
-        protected FactoryStation(long ownerId, string type) : base(ownerId, type)
+        protected FactoryStation(string type) : base(type)
         {
         }
 
@@ -57,7 +36,7 @@ namespace EliteSuppe.Trade.Stations
             foreach (Recipe recipe in Recipes)
             {
                 if (recipe.IsProducing) continue;
-                if (!ResourcesOnStock(recipe.RequiredGoods)) continue;
+                if (!IsResourcesOnStock(recipe.RequiredGoods)) continue;
                 ReduceResourcesStock(recipe.RequiredGoods);
                 recipe.IsProducing = true;
                 recipe.ProducingStartedAt = DateTime.Now;
@@ -66,20 +45,20 @@ namespace EliteSuppe.Trade.Stations
             foreach (Recipe recipe in Recipes)
             {
                 if (recipe.IsProducing == false) continue;
-                if (!ResourcesOnStock(recipe.RequiredGoods)) continue;
                 double producingTime = DateTime.Now.Subtract(recipe.ProducingStartedAt).TotalSeconds;
                 if (producingTime < recipe.ProductionTimeInSeconds) continue;
 
-                if (!OutputStockAvailable(recipe.ProducingGoods)) return;
-                AddRecipeToStock(recipe.ProducingGoods);
+                if (!IsOutputStockAvailable(recipe.ProducingGoods)) continue;
+
+                AddProducedItemsToStock(recipe.ProducingGoods);
                 recipe.IsProducing = false;
                 recipe.ProducingStartedAt = DateTime.MinValue;
             }
         }
 
-        public override void HandleBuySequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
+        public override void HandlePurchaseSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
         {
-            HandleBuySequenceOnCargo(cargoBlock, item, Credits);
+            HandlePurchaseSequenceOnCargo(cargoBlock, item, Credits);
         }
 
         public override void HandleSellSequenceOnCargo(IMyCubeBlock cargoBlock, Item item)
@@ -95,65 +74,86 @@ namespace EliteSuppe.Trade.Stations
             {
                 if (loadedData.Credits.SerializedDefinition != Credits.SerializedDefinition)
                 {
+                    loadedData.Credits.CurrentCargo = Credits.CurrentCargo;
                     Credits = loadedData.Credits;
                 }
 
-                Recipes = loadedData.Recipes;
+                SynchronizeRecipes(loadedData.Recipes);
             }
 
             RefreshStock();
         }
+        
+        public Dictionary<string, double> Progress()
+        {
+            Dictionary<Item, List<double>> statistic = new Dictionary<Item, List<double>>();
+            foreach (Recipe recipe in Recipes)
+            {
+                if (!recipe.IsProducing) continue;
+                double producingTime = DateTime.Now.Subtract(recipe.ProducingStartedAt).TotalSeconds;
+                double finish = 100f / recipe.ProductionTimeInSeconds * producingTime;
 
-        private void AddRecipeToStock(IEnumerable<Item> producingGoods)
+                foreach (Item producingGood in recipe.ProducingGoods)
+                {
+                    if (!statistic.ContainsKey(producingGood))
+                    {
+                        statistic.Add(producingGood, new List<double>());
+                    }
+
+                    statistic[producingGood].Add(finish);
+                }
+            }
+
+            Dictionary<string, double> progress = new Dictionary<string, double>();
+            foreach (KeyValuePair<Item, List<double>> pair in statistic)
+            {
+                double finish = pair.Value.Sum() / pair.Value.Count;
+                progress.Add(pair.Key.ToString(), finish > 100f ? 100f : finish);
+            }
+
+            return progress;
+        }
+
+        private void SynchronizeRecipes(List<Recipe> loadedRecipes)
+        {
+            foreach (Recipe loadedRecipe in loadedRecipes)
+            {
+                foreach (Recipe recipe in Recipes)
+                {
+                    if (loadedRecipe.Name != recipe.Name) continue;
+                    loadedRecipe.ProducingStartedAt = recipe.ProducingStartedAt;
+                    loadedRecipe.IsProducing = recipe.IsProducing;
+
+                    break;
+                }
+            }
+
+            Recipes = loadedRecipes;
+        }
+
+        private void AddProducedItemsToStock(IEnumerable<Item> producingGoods)
         {
             foreach (Item good in producingGoods)
             {
                 string definition = good.SerializedDefinition;
                 double itemsToStock = good.Result;
 
-                if (_bufferStock.ContainsKey(definition))
-                    itemsToStock = AddProductToStock(_bufferStock[definition], itemsToStock);
-                if (_productStock.ContainsKey(definition)) AddProductToStock(_productStock[definition], itemsToStock);
+                _stock[definition].CurrentCargo += itemsToStock;
             }
         }
 
-        private double AddProductToStock(Item stock, double amount)
-        {
-            double available = stock.CargoSize - stock.CurrentCargo;
-            if (available < amount)
-            {
-                amount -= available;
-                stock.CurrentCargo = stock.CargoSize;
-            }
-            else
-            {
-                stock.CurrentCargo += amount;
-                amount = 0;
-            }
-
-            return amount;
-        }
-
-        private bool OutputStockAvailable(IEnumerable<Item> producingGoods)
+        private bool IsOutputStockAvailable(IEnumerable<Item> producingGoods)
         {
             foreach (Item good in producingGoods)
             {
                 string definition = good.SerializedDefinition;
-                double stockAvailable = 0;
 
-                if (_bufferStock.ContainsKey(definition))
-                {
-                    Item stock = _bufferStock[definition];
-                    stockAvailable += stock.CargoSize - stock.CurrentCargo;
-                }
+                if (!_stock.ContainsKey(definition)) continue;
 
-                if (_productStock.ContainsKey(definition))
-                {
-                    Item stock = _productStock[definition];
-                    stockAvailable += stock.CargoSize - stock.CurrentCargo;
-                }
+                Item stock = _stock[definition];
+                double stockAvailable = stock.CargoSize - stock.CurrentCargo;
 
-                if (stockAvailable >= good.Result) return false;
+                if (stockAvailable < good.Result) return false;
             }
 
             return true;
@@ -166,47 +166,19 @@ namespace EliteSuppe.Trade.Stations
                 string definition = good.SerializedDefinition;
                 double neededItems = good.Required;
 
-                if (_bufferStock.ContainsKey(definition))
-                    neededItems = ReduceStock(_bufferStock[definition], neededItems);
-                if (_resourceStock.ContainsKey(definition))
-                    ReduceStock(_resourceStock[definition], neededItems);
+                if (_stock.ContainsKey(definition)) _stock[definition].CurrentCargo -= neededItems;
             }
         }
 
-        private static double ReduceStock(Item stock, double amount)
-        {
-            if (stock.CurrentCargo < amount)
-            {
-                amount -= stock.CurrentCargo;
-                stock.CurrentCargo = 0;
-            }
-            else
-            {
-                stock.CurrentCargo -= amount;
-                amount = 0;
-            }
-
-            return amount;
-        }
-
-        private bool ResourcesOnStock(IEnumerable<Item> requiredGoods)
+        private bool IsResourcesOnStock(IEnumerable<Item> requiredGoods)
         {
             foreach (Item good in requiredGoods)
             {
                 string definition = good.SerializedDefinition;
-                double availableItems = 0;
 
-                if (_bufferStock.ContainsKey(definition))
-                {
-                    availableItems += _bufferStock[definition].CurrentCargo;
-                }
+                if (!_stock.ContainsKey(definition)) continue;
 
-                if (_resourceStock.ContainsKey(definition))
-                {
-                    availableItems += _resourceStock[definition].CurrentCargo;
-                }
-
-                if (availableItems < good.Required) return false;
+                if (_stock[definition].CurrentCargo < good.Required) return false;
             }
 
             return true;
@@ -214,20 +186,12 @@ namespace EliteSuppe.Trade.Stations
 
         private void RefreshStock()
         {
-            Dictionary<string, Item> newBufferStock = new Dictionary<string, Item>();
-            Dictionary<string, Item> newResourceStock = new Dictionary<string, Item>();
-            Dictionary<string, Item> newProductStock = new Dictionary<string, Item>();
+            Dictionary<string, Item> stock = new Dictionary<string, Item>();
 
-            CreateStockByRecipes(Recipes, newBufferStock, newResourceStock, newProductStock);
-            UnifyStocksToBuffer(newBufferStock, newResourceStock, newProductStock);
+            CreateStockByRecipes(Recipes, stock);
+            AddRuntimeDataToNewStock(stock, _stock);
 
-            AddRuntimeDataToNewStock(newBufferStock, _bufferStock);
-            AddRuntimeDataToNewStock(newResourceStock, _resourceStock);
-            AddRuntimeDataToNewStock(newProductStock, _productStock);
-
-            _bufferStock = newBufferStock;
-            _resourceStock = newResourceStock;
-            _productStock = newProductStock;
+            _stock = stock;
         }
 
         private static void AddRuntimeDataToNewStock(
@@ -246,67 +210,37 @@ namespace EliteSuppe.Trade.Stations
 
         private static void CreateStockByRecipes(
             IEnumerable<Recipe> recipes,
-            IDictionary<string, Item> newBufferStock,
-            IDictionary<string, Item> newSourceStock,
-            IDictionary<string, Item> newProductStock
+            IDictionary<string, Item> stock
         )
         {
             foreach (Recipe recipe in recipes)
             {
                 foreach (Item requiredGood in recipe.RequiredGoods)
                 {
-                    if (requiredGood.IsBuy && requiredGood.IsSell)
-                    {
-                        AddToStock(newBufferStock, requiredGood);
-                    }
-                    else
-                    {
-                        AddToStock(newSourceStock, requiredGood);
-                    }
+                    AddToStock(stock, requiredGood);
                 }
 
                 foreach (Item producingGood in recipe.ProducingGoods)
                 {
-                    AddToStock(newProductStock, producingGood);
+                    AddToStock(stock, producingGood);
                 }
             }
         }
 
-        private static void UnifyStocksToBuffer(
-            IDictionary<string, Item> newBufferStock,
-            IDictionary<string, Item> newSourceStock,
-            IDictionary<string, Item> newProductStock
-        )
+        private static void AddToStock(IDictionary<string, Item> targetStock, Item good)
         {
-            foreach (KeyValuePair<string, Item> pair in newProductStock)
-            {
-                if (!newBufferStock.ContainsKey(pair.Key)) continue;
-                Item stockItem = newBufferStock[pair.Key];
-                stockItem.CargoSize += pair.Value.CargoSize;
-                newProductStock.Remove(pair.Key);
-            }
-
-            foreach (KeyValuePair<string, Item> pair in newSourceStock)
-            {
-                if (!newBufferStock.ContainsKey(pair.Key)) continue;
-                Item stockItem = newBufferStock[pair.Key];
-                stockItem.CargoSize += pair.Value.CargoSize;
-                newSourceStock.Remove(pair.Key);
-            }
-        }
-
-        private static void AddToStock(IDictionary<string, Item> targetStock, Item requiredGood)
-        {
-            string serializedDefinition = requiredGood.SerializedDefinition;
+            string serializedDefinition = good.SerializedDefinition;
             if (targetStock.ContainsKey(serializedDefinition))
             {
                 Item stockItem = targetStock[serializedDefinition];
-                stockItem.CargoSize += requiredGood.CargoSize;
+                stockItem.CargoSize += good.CargoSize;
+                if (good.IsPurchasing) stockItem.PurchasePrice = good.PurchasePrice;
+                if (good.IsSelling) stockItem.SellPrice = good.SellPrice;
 
                 return;
             }
 
-            Item clone = requiredGood.Clone();
+            Item clone = good.Clone();
             targetStock.Add(serializedDefinition, clone);
         }
     }

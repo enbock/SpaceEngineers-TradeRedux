@@ -1,6 +1,7 @@
 ﻿using System;
 using Elitesuppe.Trade.Exceptions;
 using Elitesuppe.Trade.Inventory;
+using Sandbox.ModAPI;
 using VRage.Game;
 
 namespace EliteSuppe.Trade.Items
@@ -8,60 +9,23 @@ namespace EliteSuppe.Trade.Items
     [Serializable]
     public class Item
     {
-        public Item()
+        public Price SellPrice;
+        public Price PurchasePrice;
+
+        public bool IsSelling
         {
+            get { return SellPrice.Amount > 0; }
         }
 
-        public Item(
-            string itemType,
-            Price price,
-            bool sell,
-            bool buy,
-            double cargoSize = 1000,
-            double currentCargo = 500
-        )
+        public bool IsPurchasing
         {
-            try
-            {
-                _definition = ItemDefinitionFactory.DefinitionFromString(itemType);
-                Price = price;
-                CargoSize = cargoSize;
-                CurrentCargo = currentCargo;
-                IsSell = sell;
-                IsBuy = buy;
-            }
-            catch (UnknownItemException)
-            {
-                //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
-            }
+            get { return PurchasePrice.Amount > 0; }
         }
 
-        public Item(
-            string itemType,
-            Price price,
-            double required = 0f,
-            double result = 0f,
-            double cargoSize = 1000,
-            double currentCargo = 500
-        )
-        {
-            try
-            {
-                _definition = ItemDefinitionFactory.DefinitionFromString(itemType);
-                Price = price;
-                CargoSize = cargoSize;
-                CurrentCargo = currentCargo;
-                Required = required;
-                Result = result;
-                IsSell = result > 0f;
-                IsBuy = required > 0f;
-            }
-            catch (UnknownItemException)
-            {
-                //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
-            }
-        }
-
+        public double CurrentCargo = 0f;
+        public double CargoSize = double.MaxValue;
+        public double Required = 0f;
+        public double Result = 0f;
         private MyDefinitionId _definition;
 
         public MyDefinitionId Definition
@@ -71,51 +35,87 @@ namespace EliteSuppe.Trade.Items
 
         public string SerializedDefinition
         {
-            get { return Definition.ToString(); }
+            get { return Definition.ToString().Replace("MyObjectBuilder_", ""); }
 
             // Used for XML to Object encoding
-            set
-            {
-                try
-                {
-                    _definition = ItemDefinitionFactory.DefinitionFromString(value);
-                }
-                catch (UnknownItemException)
-                {
-                    //MyAPIGateway.Utilities.ShowMessage("Error", "Wrong item: " + exception.Message);
-                }
-            }
+            set { ParseDefinition(value); }
         }
-
-        public bool IsSell { get; set; }
-
-        public bool IsBuy { get; set; }
-
-        public double CurrentCargo { get; set; }
-
-        public double CargoSize { get; set; } = double.MaxValue;
-
-        public double Required { get; set; } = 0;
-
-        public double Result { get; set; } = 0;
 
         public double CargoRatio
         {
             get { return 1f / CargoSize * CurrentCargo; }
         }
 
-        public Price Price = new Price(1.0);
+        public Item()
+        {
+        }
+
+        public Item(string itemType)
+        {
+            ParseDefinition(itemType);
+            PurchasePrice = new Price(1f, 1f, 1f);
+            SellPrice = new Price(1f, 1f, 1f);
+            CargoSize = 0;
+            CurrentCargo = 0;
+        }
+
+        public Item(
+            string itemType,
+            Price purchasePrice,
+            Price sellPrice,
+            double cargoSize = 1000f,
+            double currentCargo = 0f
+        )
+        {
+            ParseDefinition(itemType);
+            PurchasePrice = purchasePrice;
+            SellPrice = sellPrice;
+            CargoSize = cargoSize;
+            CurrentCargo = currentCargo;
+        }
+
+        public Item(
+            string itemType,
+            Price purchasePrice,
+            Price sellPrice,
+            double required = 0f,
+            double result = 0f,
+            double cargoSize = 1000f,
+            double currentCargo = 0f
+        )
+        {
+            ParseDefinition(itemType);
+            PurchasePrice = purchasePrice;
+            SellPrice = sellPrice;
+            CargoSize = cargoSize;
+            CurrentCargo = currentCargo;
+            Required = required;
+            Result = result;
+        }
+
+        private void ParseDefinition(string itemType)
+        {
+            try
+            {
+                _definition = ItemDefinitionFactory.DefinitionFromString(itemType);
+            }
+            catch (UnknownItemException exception)
+            {
+                MyAPIGateway.Utilities.ShowNotification("Error: Creating item: " + exception.Message);
+            }
+        }
 
         public override string ToString()
         {
             return ItemDefinitionFactory.DefinitionToString(Definition);
         }
-        
+
         public Item Clone()
         {
-            Item copy = this.MemberwiseClone() as Item;
+            Item copy = MemberwiseClone() as Item;
             // ReSharper disable once PossibleNullReferenceException
-            copy.Price = Price.Clone();
+            copy.SellPrice = SellPrice.Clone();
+            copy.PurchasePrice = PurchasePrice.Clone();
 
             return copy;
         }

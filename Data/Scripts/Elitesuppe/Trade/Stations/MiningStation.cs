@@ -12,30 +12,32 @@ namespace EliteSuppe.Trade.Stations
     {
         public const string StationType = "Elitesuppe_TradeRedux_MiningStation";
 
-        public MiningStation()
+        public MiningStation() : base(StationType)
         {
         }
 
-        public MiningStation(long ownerId) : base(ownerId, StationType)
+        public MiningStation(bool init = false) : base(StationType)
         {
+            if (!init) return; // deserialization created
+            
             Recipes = new List<Recipe>
             {
                 new Recipe(
                     new List<Item>
                     {
-                        new Item("MyObjectBuilder_Ingot/Uranium", new Price(32f), 8, 0, 100000, 50),
-                        new Item("MyObjectBuilder_Ore/Ice", new Price(12f), 800, 0, 250000, 50)
+                        new Item("Ingot/Uranium", new Price(0.02f, 0.5f, 1.5f), new Price(), 8, 0, 100000),
+                        new Item("Ore/Ice", new Price(12f), new Price(), 32, 0, 250000)
                     },
                     new List<Item>
                     {
-                        new Item("MyObjectBuilder_Ore/Iron", new Price(100f), 0, 1, 10000, 0),
-                        new Item("MyObjectBuilder_Ore/Nickel", new Price(100f), 0, 1, 10000, 0),
-                        new Item("MyObjectBuilder_Ore/Cobalt", new Price(100f), 0, 1, 10000, 0),
-                        new Item("MyObjectBuilder_Ore/Gold", new Price(200f), 0, 1, 10000, 0),
-                        new Item("MyObjectBuilder_Ore/Silver", new Price(200f), 0, 1, 10000, 0),
-                        new Item("MyObjectBuilder_Ore/Silicon", new Price(200f), 0, 1, 10000, 0),
-                        new Item("MyObjectBuilder_Ore/Magnesium", new Price(200f), 0, 1, 10000, 0),
-                        new Item("MyObjectBuilder_Ore/Platinum", new Price(300f), 0, 1, 10000, 0)
+                        new Item("Ore/Iron", new Price(), new Price(0.001f, 0.75f, 2f), 0, 1, 10000),
+                        new Item("Ore/Nickel", new Price(), new Price(0.0084f, 0.75f, 2f), 0, 1, 10000),
+                        new Item("Ore/Cobalt", new Price(), new Price(0.01f, 0.75f, 2f), 0, 1, 10000),
+                        new Item("Ore/Gold", new Price(), new Price(0.3f, 0.75f, 2f), 0, 1, 10000),
+                        new Item("Ore/Silver", new Price(), new Price(0.03f, 0.75f, 2f), 0, 1, 10000),
+                        new Item("Ore/Silicon", new Price(), new Price(0.0044f, 0.75f, 2f), 0, 1, 10000),
+                        new Item("Ore/Magnesium", new Price(), new Price(0.3f, 0.75f, 2f), 0, 1, 10000),
+                        new Item("Ore/Platinum", new Price(), new Price(0.7f, 0.75f, 2f), 0, 1, 10000)
                     },
                     1f
                 )

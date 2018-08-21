@@ -12,52 +12,54 @@ namespace EliteSuppe.Trade.Stations
     {
         public const string StationType = "Elitesuppe_TradeRedux_IronForge";
 
-        public IronForge()
+        public IronForge() : base(StationType)
         {
         }
 
-        public IronForge(long ownerId) : base(ownerId, StationType)
+        public IronForge(bool init = false) : base(StationType)
         {
+            if (!init) return; // deserialization created
+
             Recipes = new List<Recipe>
             {
                 new Recipe(
                     new List<Item>
                     {
-                        new Item("MyObjectBuilder_Ingot/Uranium", new Price(32f), 1, 0, 25000, 50),
-                        new Item("MyObjectBuilder_Ore/Ice", new Price(12f), 1, 0, 25000, 50),
-                        new Item("MyObjectBuilder_Ingot/Iron", new Price(12f), 1, 0, 25000, 50)
+                        new Item("Ingot/Uranium", new Price(0.03, 0.5, 1.5), new Price(), 1000, 0, 25000),
+                        new Item("Ore/Ice", new Price(0.0001, 0.5, 1.5), new Price(), 2000, 0, 25000),
+                        new Item("Ingot/Iron", new Price(0.0002, 0.5, 1.5), new Price(), 1000, 0, 25000)
                     },
                     new List<Item>
                     {
-                        new Item("MyObjectBuilder_Component/SteelPlate", new Price(100f), 0, 1, 100000, 0)
+                        new Item("Component/SteelPlate", new Price(), new Price(0.05f), 0, 1000, 100000)
                     },
-                    1f
+                    20f
                 ),
                 new Recipe(
                     new List<Item>
                     {
-                        new Item("MyObjectBuilder_Ingot/Uranium", new Price(32f), 1, 0, 25000, 50),
-                        new Item("MyObjectBuilder_Ore/Ice", new Price(12f), 1, 0, 25000, 50),
-                        new Item("MyObjectBuilder_Ingot/Iron", new Price(12f), 1, 0, 25000, 50)
+                        new Item("Ingot/Uranium", new Price(0.03, 0.5, 1.5), new Price(), 1000, 0, 25000),
+                        new Item("Ore/Ice", new Price(0.0001, 0.5, 1.5), new Price(), 2400, 0, 25000),
+                        new Item("Ingot/Iron", new Price(0.0002, 0.5, 1.5), new Price(), 1000, 0, 25000)
                     },
                     new List<Item>
                     {
-                        new Item("MyObjectBuilder_Component/Construction Component", new Price(100f), 0, 1, 100000, 0)
+                        new Item("Component/Construction Component", new Price(), new Price(0.07f), 0, 1000, 100000)
                     },
-                    1f
+                    24f
                 ),
                 new Recipe(
                     new List<Item>
                     {
-                        new Item("MyObjectBuilder_Ingot/Uranium", new Price(32f), 1, 0, 25000, 50),
-                        new Item("MyObjectBuilder_Ore/Ice", new Price(12f), 1, 0, 25000, 50),
-                        new Item("MyObjectBuilder_Ingot/Iron", new Price(12f), 1, 0, 25000, 50)
+                        new Item("Ingot/Uranium", new Price(0.03f, 0.5f, 1.5f), new Price(), 1000, 0, 25000),
+                        new Item("Ore/Ice", new Price(0.0001, 0.5, 1.5), new Price(), 2200, 0, 25000),
+                        new Item("Ingot/Iron", new Price(0.0002, 0.5, 1.5), new Price(), 1000, 0, 25000)
                     },
                     new List<Item>
                     {
-                        new Item("MyObjectBuilder_Component/Interior Plate", new Price(100f), 0, 1, 100000, 0)
+                        new Item("Component/Interior Plate", new Price(), new Price(0.06f), 0, 1000, 100000)
                     },
-                    1f
+                    22f
                 )
             };
         }
